@@ -10,7 +10,6 @@ import {
 import { Link, NavLink, useLocation } from "react-router";
 import { useAuth } from "../auth/AuthProvider";
 import { session } from "../lib/api";
-import { Notice } from "./ui";
 
 function Header() {
   const auth = useAuth();
@@ -125,7 +124,6 @@ function Header() {
 
 export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const auth = useAuth();
   const main = useRef<HTMLElement>(null);
   const first = useRef(true);
   useEffect(() => {
@@ -151,17 +149,6 @@ export function Layout({ children }: { children: ReactNode }) {
         tabIndex={-1}
         className="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 pb-16 outline-none md:px-6 md:pt-10"
       >
-        {auth.error && (
-          <Notice>
-            {auth.error}{" "}
-            <button
-              className="text-button"
-              onClick={() => void session.restore()}
-            >
-              Retry session
-            </button>
-          </Notice>
-        )}
         {children}
       </main>
       <footer className="border-t border-line bg-[#080d19] py-8 text-xs text-muted">

@@ -113,6 +113,47 @@ test("validation errors and network failures remain actionable", async () => {
   expect(session.getSnapshot().status).toBe("error");
 });
 
+test("failed restoration exposes its cause and can be retried", async () => {
+  let release!: (response: Response) => void;
+  let started!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(
+      Response.json({ message: "Invalid request origin" }, { status: 403 }),
+    )
+    .mockImplementationOnce(() => {
+      started();
+      return new Promise<Response>((resolve) => {
+        release = resolve;
+      });
+    });
+  vi.stubGlobal("fetch", fetcher);
+  const session = new SessionClient();
+  await session.restore();
+  expect(session.getSnapshot()).toMatchObject({
+    status: "error",
+    error: "Your session could not be restored. Invalid request origin",
+  });
+  const retry = session.restore();
+  await pending;
+  expect(session.getSnapshot()).toEqual({
+    status: "loading",
+    user: null,
+    error: null,
+  });
+  release(Response.json(result("restored")));
+  await retry;
+  expect(session.getSnapshot()).toEqual({
+    status: "authenticated",
+    user,
+    error: null,
+  });
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
 test("a second unauthorized response clears the session without another retry", async () => {
   let refreshes = 0;
   vi.stubGlobal(

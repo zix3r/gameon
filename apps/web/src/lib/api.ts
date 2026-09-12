@@ -121,6 +121,11 @@ export class SessionClient {
     const revision = this.revision;
     const operation = this.cookies(async () => {
       if (revision !== this.revision) return null;
+      this.set({
+        ...this.state,
+        status: this.state.user ? "authenticated" : "loading",
+        error: null,
+      });
       try {
         const result = await request<AuthResult>("/auth/refresh", {
           method: "POST",
@@ -139,7 +144,7 @@ export class SessionClient {
         this.set({
           ...this.state,
           status: this.state.user ? "authenticated" : "error",
-          error: "Your session could not be restored. Please try again.",
+          error: `Your session could not be restored. ${errorMessage(error)}`,
         });
         throw error;
       }
