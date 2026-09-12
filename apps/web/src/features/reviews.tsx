@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
 import { api, errorMessage } from "../lib/api";
 import { date, invalidateReviews, useGame } from "../lib/queries";
@@ -16,7 +16,6 @@ import {
   Notice,
   PageHeading,
   Pagination,
-  Rating,
 } from "../components/ui";
 
 export function ReviewEditor({
@@ -55,20 +54,36 @@ export function ReviewEditor({
     >
       <form className="form-stack" onSubmit={submit}>
         {mutation.error && <Notice>{errorMessage(mutation.error)}</Notice>}
-        <label>
-          Your rating
-          <select
-            value={rating}
-            onChange={(event) => setRating(Number(event.target.value))}
-          >
-            {[5, 4, 3, 2, 1].map((value) => (
-              <option value={value} key={value}>
-                {value} / 5 —{" "}
-                {["Poor", "Fair", "Good", "Great", "Excellent"][value - 1]}
-              </option>
+        <fieldset disabled={mutation.isPending}>
+          <legend className="mb-2 text-sm font-medium">Your rating</legend>
+          <div className="flex">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <label key={value} className="cursor-pointer p-2.5">
+                <input
+                  className="peer sr-only"
+                  type="radio"
+                  name="rating"
+                  value={value}
+                  checked={rating === value}
+                  onChange={() => setRating(value)}
+                  aria-label={`${value} out of 5 stars`}
+                />
+                <Star
+                  aria-hidden="true"
+                  className={`size-6 rounded-sm transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-violet-300 ${
+                    value <= rating
+                      ? "fill-amber-400 text-amber-400"
+                      : "text-slate-400"
+                  }`}
+                />
+              </label>
             ))}
-          </select>
-        </label>
+          </div>
+          <span className="field-hint">
+            {rating} / 5 —{" "}
+            {["Poor", "Fair", "Good", "Great", "Excellent"][rating - 1]}
+          </span>
+        </fieldset>
         <label>
           Your review
           <textarea
@@ -161,7 +176,23 @@ export function ReviewCard({
             </time>
           </div>
         </div>
-        <Rating value={review.rating} />
+        <span
+          role="img"
+          aria-label={`${review.rating} out of 5 stars`}
+          className="flex shrink-0 gap-0.5"
+        >
+          {[1, 2, 3, 4, 5].map((value) => (
+            <Star
+              key={value}
+              aria-hidden="true"
+              className={`size-4 ${
+                value <= review.rating
+                  ? "fill-amber-400 text-amber-400"
+                  : "text-slate-400"
+              }`}
+            />
+          ))}
+        </span>
       </div>
       <p
         className={`text-sm whitespace-pre-line wrap-break-word text-slate-300 ${full ? "" : "line-clamp-5"}`}
