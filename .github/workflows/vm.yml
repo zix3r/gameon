@@ -1,0 +1,87 @@
+name: VM power
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Start with the latest verified images, or stop the VM
+        required: true
+        type: choice
+        options:
+          - start
+          - stop
+  workflow_call:
+    inputs:
+      action:
+        type: string
+        default: deploy
+      image_tag:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+
+concurrency:
+  group: gameon-vm
+  cancel-in-progress: false
+
+jobs:
+  power:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Find latest verified images
+        if: inputs.action == 'start'
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/images.yml/runs?branch=main&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty')
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "No successful production image build found."; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - name: Sign in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Stop and deallocate
+        if: inputs.action == 'stop'
+        run: az vm deallocate --resource-group gameon-rg --name gameon
+      - name: Start VM
+        if: inputs.action == 'start'
+        run: az vm start --resource-group gameon-rg --name gameon
+      - name: Check VM state
+        if: inputs.action != 'stop'
+        id: vm
+        run: |
+          state=$(az vm get-instance-view --resource-group gameon-rg --name gameon --query "instanceView.statuses[?starts_with(code, 'PowerState/')].code | [0]" -o tsv)
+          if [ "$state" = "PowerState/running" ]; then
+            echo "running=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "VM is stopped. Images will be deployed on the next Start." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Pull and run verified images
+        if: steps.vm.outputs.running == 'true'
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag || steps.release.outputs.sha }}
+        run: |
+          az vm run-command invoke --resource-group gameon-rg --name gameon \
+            --command-id RunShellScript --scripts "
+              set -eu
+              cd /home/gameon/gameon
+              export IMAGE_TAG=$IMAGE_TAG
+              curl --fail --silent --show-error https://raw.githubusercontent.com/zix3r/gameon/$IMAGE_TAG/compose.prod.yaml -o compose.prod.yaml.next
+              docker compose -f compose.prod.yaml.next config --quiet
+              docker compose -f compose.prod.yaml.next pull
+              mv compose.prod.yaml.next compose.prod.yaml
+              docker compose -f compose.prod.yaml up --no-build -d --wait --wait-timeout 180
+              sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=$IMAGE_TAG/' .env
+              printf 'GAMEON_DEPLOY_OK\n'
+            " --query 'value[].message' -o tsv | tee deployment.log
+          grep -qx 'GAMEON_DEPLOY_OK' deployment.log
+          echo "Running image version: $IMAGE_TAG" >> "$GITHUB_STEP_SUMMARY"

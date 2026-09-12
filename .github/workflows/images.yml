@@ -8,7 +8,7 @@ permissions:
 
 concurrency:
   group: images-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   images:
@@ -71,3 +71,14 @@ jobs:
       - name: Stop test stack
         if: always()
         run: docker compose -f compose.prod.yaml down --volumes
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: images
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: ./.github/workflows/vm.yml
+    with:
+      image_tag: ${{ github.sha }}

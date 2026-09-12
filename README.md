@@ -69,7 +69,9 @@ Komanda demonstruoja visus 24 API metodus. Užklausos sunumeruotos ir sugrupuoto
 
 ## Diegimas
 
-„GitHub Actions“ sukuria produkcinius atvaizdus, patikrina trijų konteinerių sistemą ir tik iš `main` publikuoja `ghcr.io/zix3r/gameon-api` bei `gameon-web`. GHCR paketai turi būti vieši. VM nereikia Node.js ar kompiliavimo įrankių – tik Docker ir Compose v2.
+Sistema: <https://gameon-uni.duckdns.org>.
+
+„GitHub Actions“ sukuria produkcinius atvaizdus, patikrina trijų konteinerių sistemą ir tik iš `main` publikuoja `ghcr.io/zix3r/gameon-api` bei `gameon-web`. Sėkmingas `main` kūrimas automatiškai atnaujina veikiančią VM; sustabdytos VM neįjungia. GHCR paketai turi būti vieši. VM nereikia Node.js ar kompiliavimo įrankių – tik Docker ir Compose v2.
 
 Serveryje laikykite `compose.prod.yaml` ir privačią `.env` (`chmod 600 .env`):
 
@@ -92,7 +94,9 @@ docker compose -f compose.prod.yaml pull
 docker compose -f compose.prod.yaml up --no-build -d --wait
 ```
 
-Atnaujinant pakeiskite `IMAGE_TAG` į patikrinto komito SHA ir pakartokite komandas. Migracijos taikomos automatiškai; konteineriai pasileidžia po VM perkrovimo. Prieš DB keičiančius atnaujinimus pasidarykite atsarginę kopiją; senas atvaizdas neatšaukia migracijų.
+GitHub → **Actions → VM power → Run workflow**: `stop` išjungia ir atlaisvina VM skaičiavimo išteklius; `start` įjungia VM ir įdiegia naujausią sėkmingai patikrintą versiją. Diskas ir viešas IP išlieka, todėl jų apskaita nesustoja. Azure prisijungimui naudojamas OIDC, tik `main` šaka ir teisės tik šiai VM; slaptažodžiai ar SSH raktai į GitHub nekeliami.
+
+Rankiniu būdu atnaujinant pakeiskite `IMAGE_TAG` į patikrinto komito SHA ir pakartokite komandas. Migracijos taikomos automatiškai; konteineriai pasileidžia po VM perkrovimo. Prieš DB keičiančius atnaujinimus pasidarykite atsarginę kopiją; senas atvaizdas neatšaukia migracijų.
 
 Vietiniam produkcijos tikrinimui naudokite `SITE_ADDRESS=:80`, `HTTP_PORT=18080`, `HTTPS_PORT=18443` ir `APP_ORIGIN=http://localhost:18080`; atvaizdus galima sukurti su `docker compose -f compose.prod.yaml build`.
 
