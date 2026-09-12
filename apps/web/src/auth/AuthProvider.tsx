@@ -61,7 +61,12 @@ export function RequireAuth({
   if (auth.status === "error")
     return (
       <ErrorState
-        message={auth.error ?? "Session unavailable."}
+        title="Access restricted"
+        message={
+          admin
+            ? "Sign in with an administrator account to access this page."
+            : "Sign in to access this page."
+        }
         onRetry={() => void session.restore()}
       />
     );
