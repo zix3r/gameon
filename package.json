@@ -10,7 +10,7 @@
   "scripts": {
     "seed": "npm run seed --workspace @gameon/api",
     "smoke": "node scripts/smoke.mjs",
-    "check": "sh scripts/dev-entrypoint.sh sh -c 'if [ \"$NODE_ENV\" != production ]; then npm run quality || exit $?; fi; node scripts/check-db.mjs'",
+    "check": "if [ \"$NODE_ENV\" != production ]; then npm run quality || exit $?; fi; node scripts/check-db.mjs",
     "quality": "prettier --check . && eslint . && npm run typecheck --workspaces && npm test --workspaces",
     "compile": "npm run build --workspaces",
     "format": "prettier --write ."

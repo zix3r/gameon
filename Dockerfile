@@ -3,11 +3,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 
 FROM base AS development
-RUN apt-get update && apt-get install -y --no-install-recommends gosu && rm -rf /var/lib/apt/lists/*
-ENV HOME=/tmp
-ENV npm_config_cache=/tmp/npm
-COPY scripts/dev-entrypoint.sh /usr/local/bin/dev-entrypoint
-ENTRYPOINT ["sh", "/usr/local/bin/dev-entrypoint"]
+USER node
 
 FROM base AS dependencies
 COPY package.json package-lock.json ./
@@ -34,7 +30,7 @@ COPY --from=build --chown=node:node /tmp/api-tests ./apps/api/test-build
 COPY --chown=node:node package.json ./package.json
 COPY --chown=node:node apps/api/package.json ./apps/api/package.json
 COPY --chown=node:node apps/api/prisma ./apps/api/prisma
-COPY --chown=node:node scripts/check-db.mjs scripts/dev-entrypoint.sh scripts/smoke.mjs ./scripts/
+COPY --chown=node:node scripts/check-db.mjs scripts/smoke.mjs ./scripts/
 USER node
 EXPOSE 3000
 CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy --schema apps/api/prisma/schema.prisma && exec node apps/api/dist/main.js"]

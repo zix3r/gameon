@@ -10,7 +10,8 @@
 ## Paleidimas
 
 Reikia Docker su Compose v2+. Nukopijuokite `.env.example` į `.env`.
-Tik trys konteineriai: **web, api, db**. API pats įdiegia priklausomybes ir pritaiko migracijas.
+Tik trys konteineriai: **web, api, db**. Kiekvieną kartą paleidžiamas kūrimo API vykdo `npm ci`, generuoja „Prisma“ klientą ir pritaiko migracijas. DB duomenys išlieka.
+Kūrimo konteineriai veikia kaip `node` (UID/GID `1000:1000`); bendrai naudojamas projekto aplankas turi būti jam rašomas.
 
 ```sh
 docker compose up --build --force-recreate -d --wait

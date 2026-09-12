@@ -29,7 +29,11 @@ services:
       IGDB_CLIENT_SECRET: ${IGDB_CLIENT_SECRET:-}
     volumes:
       - .:/app
-    command: sh -c 'sh scripts/dev-dependencies.sh && npx prisma migrate deploy --schema apps/api/prisma/schema.prisma && exec npm run dev --workspace @gameon/api'
+    command: >-
+      sh -c 'npm ci &&
+      npx prisma generate --schema apps/api/prisma/schema.prisma &&
+      npx prisma migrate deploy --schema apps/api/prisma/schema.prisma &&
+      exec npm run dev --workspace @gameon/api'
     depends_on:
       db:
         condition: service_healthy
