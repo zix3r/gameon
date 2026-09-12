@@ -125,6 +125,17 @@ test("Core application flows", async (t) => {
         ).status,
         403,
       );
+      for (const site of ["same-origin", "cross-site"]) {
+        const response = await fetch(`${base}/auth/logout`, {
+          method: "POST",
+          headers: {
+            "X-GameON-CSRF": "1",
+            "Sec-Fetch-Site": site,
+            Origin: "http://127.0.0.1:8080",
+          },
+        });
+        assert.equal(response.status, site === "same-origin" ? 204 : 403);
+      }
       await request("GET", "/health", 200);
     });
 

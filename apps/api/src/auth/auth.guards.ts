@@ -64,7 +64,8 @@ export class CookieOriginGuard implements CanActivate {
     if (
       request.headers["x-gameon-csrf"] !== "1" ||
       request.headers["sec-fetch-site"] === "cross-site" ||
-      (request.headers.origin &&
+      (request.headers["sec-fetch-site"] !== "same-origin" &&
+        request.headers.origin &&
         request.headers.origin !== this.settings.origin)
     ) {
       throw new ForbiddenException(
