@@ -19,16 +19,16 @@ docker compose up --build --force-recreate -d --wait
 
 Sistema: <http://localhost:8080> · API dokumentacija: <http://localhost:8080/api/docs>
 
-| Veiksmas            | Komanda                                                    |
-| ------------------- | ---------------------------------------------------------- |
-| Žurnalai            | `docker compose logs -f`                                   |
-| Sustabdyti          | `docker compose down`                                      |
-| Ištrinti ir DB      | `docker compose down --volumes`                            |
-| Patikros ir testai  | `docker compose exec api npm run check`                    |
-| Užpildyti duomenis  | `docker compose exec api npm run seed`                     |
-| Produkcinis režimas | `docker compose -f compose.prod.yaml up --build -d --wait` |
+| Veiksmas            | Komanda                                 |
+| ------------------- | --------------------------------------- |
+| Žurnalai            | `docker compose logs -f`                |
+| Sustabdyti          | `docker compose down`                   |
+| Ištrinti ir DB      | `docker compose down --volumes`         |
+| Patikros ir testai  | `docker compose exec api npm run check` |
+| Užpildyti duomenis  | `docker compose exec api npm run seed`  |
+| Produkcinis režimas | Žr. „Diegimas“ žemiau                   |
 
-Produkciniam režimui kitose komandose taip pat pridėkite `-f compose.prod.yaml`. Aplinkų DB atskiros; prieš keisdami režimą sustabdykite esamą. `--volumes` ištrina DB be patvirtinimo.
+Produkciniam režimui kitose komandose taip pat pridėkite `-f compose.prod.yaml`. Aplinkų DB atskiros. `--volumes` ištrina DB ir HTTPS sertifikatus be patvirtinimo.
 
 ## Duomenys ir prisijungimas
 
@@ -67,4 +67,33 @@ Komanda demonstruoja visus 24 API metodus. Užklausos sunumeruotos ir sugrupuoto
 - `apps/api/src/` – kiekvienos srities valdiklis (`controller`), įvesties taisyklės (`dto`) ir logika (`service`).
 - `apps/api/prisma/` – DB schema ir migracijos; `scripts/check-db.mjs` – izoliuotų testų paleidimas.
 
-`.env` nekelkite į Git. Diegimas debesyje dar neparengtas.
+## Diegimas
+
+„GitHub Actions“ sukuria produkcinius atvaizdus, patikrina trijų konteinerių sistemą ir tik iš `main` publikuoja `ghcr.io/zix3r/gameon-api` bei `gameon-web`. GHCR paketai turi būti vieši. VM nereikia Node.js ar kompiliavimo įrankių – tik Docker ir Compose v2.
+
+Serveryje laikykite `compose.prod.yaml` ir privačią `.env` (`chmod 600 .env`):
+
+```dotenv
+IMAGE_TAG=<patikrinto-main-komito-SHA>
+SITE_ADDRESS=<vardas>.duckdns.org
+APP_ORIGIN=https://<vardas>.duckdns.org
+DB_PASSWORD=<atsitiktinis-hex-slaptazodis>
+JWT_SECRET=<atsitiktinis-hex-raktas>
+IGDB_CLIENT_ID=<kliento-ID>
+IGDB_CLIENT_SECRET=<kliento-paslaptis>
+```
+
+`DB_PASSWORD` ir `JWT_SECRET` sugeneruokite atskirai su `openssl rand -hex 32`. DB slaptažodis nustatomas kuriant DB tomą; vien `.env` pakeitimas esamos DB slaptažodžio nepakeičia.
+
+„DuckDNS“ A įrašas turi rodyti į VM viešą IP. Atverkite TCP 80 ir 443; SSH 22 leiskite tik iš administratoriaus IP. `web` naudoja „Caddy“, kuris automatiškai išduoda ir atnaujina HTTPS sertifikatus. DB ir API prievadai neviešinami.
+
+```sh
+docker compose -f compose.prod.yaml pull
+docker compose -f compose.prod.yaml up --no-build -d --wait
+```
+
+Atnaujinant pakeiskite `IMAGE_TAG` į patikrinto komito SHA ir pakartokite komandas. Migracijos taikomos automatiškai; konteineriai pasileidžia po VM perkrovimo. Prieš DB keičiančius atnaujinimus pasidarykite atsarginę kopiją; senas atvaizdas neatšaukia migracijų.
+
+Vietiniam produkcijos tikrinimui naudokite `SITE_ADDRESS=:80`, `HTTP_PORT=18080`, `HTTPS_PORT=18443` ir `APP_ORIGIN=http://localhost:18080`; atvaizdus galima sukurti su `docker compose -f compose.prod.yaml build`.
+
+`.env` nekelkite į Git.

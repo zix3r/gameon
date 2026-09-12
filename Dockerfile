@@ -35,7 +35,7 @@ USER node
 EXPOSE 3000
 CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy --schema apps/api/prisma/schema.prisma && exec node apps/api/dist/main.js"]
 
-FROM nginxinc/nginx-unprivileged:stable-alpine AS web
-COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/apps/web/dist /usr/share/nginx/html
-EXPOSE 8080
+FROM caddy:2-alpine AS web
+COPY apps/web/Caddyfile /etc/caddy/Caddyfile
+COPY --from=build /app/apps/web/dist /srv
+EXPOSE 80 443
