@@ -1,0 +1,32 @@
+{
+  "name": "gameon",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "seed": "npm run seed --workspace @gameon/api",
+    "smoke": "node scripts/smoke.mjs",
+    "check": "sh scripts/dev-entrypoint.sh sh -c 'if [ \"$NODE_ENV\" != production ]; then npm run quality || exit $?; fi; node scripts/check-db.mjs'",
+    "quality": "prettier --check . && eslint . && npm run typecheck --workspaces && npm test --workspaces",
+    "compile": "npm run build --workspaces",
+    "format": "prettier --write ."
+  },
+  "overrides": {
+    "multer": "^2.3.0",
+    "deepmerge-ts": "^8.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.0",
+    "typescript-eslint": "^8.46.0",
+    "typescript": "^6.0.3"
+  }
+}

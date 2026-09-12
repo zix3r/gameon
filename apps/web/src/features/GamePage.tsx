@@ -1,0 +1,97 @@
+import { useState } from "react";
+import { Link, useParams } from "react-router";
+import { Monitor, ShoppingBag } from "lucide-react";
+import { useAuth } from "../auth/AuthProvider";
+import { money, useCategories, useGame } from "../lib/queries";
+import {
+  BackLink,
+  ErrorState,
+  GameCover,
+  Loading,
+  PageHeading,
+  Rating,
+} from "../components/ui";
+import { ReviewSection } from "./reviews";
+import { OrderDialog } from "./orders";
+
+export function GamePage() {
+  const { gameId = "" } = useParams();
+  const game = useGame(gameId);
+  const categories = useCategories();
+  const auth = useAuth();
+  const [ordering, setOrdering] = useState(false);
+  if (game.isPending) return <Loading label="Loading game…" />;
+  if (game.isError)
+    return (
+      <ErrorState error={game.error} onRetry={() => void game.refetch()} />
+    );
+  const category = categories.data?.find(
+    (item) => item.id === game.data.categoryId,
+  );
+  return (
+    <>
+      <BackLink to="/games">Back to the catalogue</BackLink>
+      <div className="grid items-start gap-8 sm:grid-cols-[200px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-12">
+        <GameCover
+          game={game.data}
+          eager
+          className="mx-auto w-full max-w-60 rounded-2xl border border-line sm:max-w-none"
+        />
+        <div>
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <Link
+              className="rounded-md bg-violet-950 px-3 py-1 text-xs font-semibold"
+              to={`/categories/${game.data.categoryId}`}
+            >
+              {category?.name ?? "View category"}
+            </Link>
+            <span className="inline-flex items-center gap-1 text-xs text-muted">
+              <Monitor size={14} aria-hidden="true" />
+              {game.data.platform}
+            </span>
+            <a href="#reviews">
+              <Rating
+                value={game.data.averageRating}
+                count={game.data.reviewCount}
+              />
+            </a>
+          </div>
+          <PageHeading title={game.data.title} />
+          <p className="leading-loose whitespace-pre-line wrap-break-word text-slate-300">
+            {game.data.description}
+          </p>
+          <div className="mt-6 flex flex-wrap items-center gap-5 border-t border-line pt-6">
+            <strong className="text-3xl tracking-tight">
+              {money(game.data.price)}
+            </strong>
+            {auth.user ? (
+              <button
+                className="button"
+                disabled={auth.status === "loading"}
+                onClick={() => setOrdering(true)}
+              >
+                <ShoppingBag size={17} aria-hidden="true" />
+                Place demo order
+              </button>
+            ) : (
+              <Link
+                className="button"
+                to="/login"
+                state={{ from: `/games/${gameId}` }}
+              >
+                Sign in to order
+              </Link>
+            )}
+            <span className="w-full text-xs text-muted">
+              Demo only. No real payment or game delivery.
+            </span>
+          </div>
+        </div>
+      </div>
+      <ReviewSection key={gameId} gameId={gameId} />
+      {ordering && (
+        <OrderDialog game={game.data} onClose={() => setOrdering(false)} />
+      )}
+    </>
+  );
+}

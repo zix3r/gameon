@@ -1,0 +1,101 @@
+@import "@fontsource-variable/inter";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --color-page: #0b1020;
+  --color-surface: #141c30;
+  --color-line: #2a3550;
+  --color-ink: #edf1ff;
+  --color-muted: #a4afc7;
+  --color-accent: #bcaaff;
+  --color-primary: #7044dc;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  body {
+    @apply m-0 min-w-80 bg-page font-sans leading-relaxed text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply leading-tight font-bold tracking-tight wrap-break-word;
+  }
+  h1 {
+    @apply mb-3 text-3xl md:text-4xl;
+  }
+  h2 {
+    @apply mb-3 text-xl md:text-2xl;
+  }
+  h3 {
+    @apply mb-2 text-lg;
+  }
+  p {
+    @apply mb-4;
+  }
+  a {
+    @apply text-accent transition-colors hover:text-violet-200;
+  }
+  button {
+    @apply cursor-pointer disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-4 outline-violet-300;
+  }
+  img {
+    @apply block h-auto max-w-full;
+  }
+  label {
+    @apply flex flex-col gap-2 text-sm font-medium;
+  }
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    @apply min-h-11 w-full min-w-0 rounded-lg border border-slate-600 bg-page px-3 py-2 text-ink placeholder:text-slate-400;
+  }
+  textarea {
+    @apply min-h-32 resize-y;
+  }
+  input[type="checkbox"] {
+    @apply size-4 shrink-0 accent-primary;
+  }
+}
+
+@layer components {
+  .button {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-transparent bg-primary px-4 py-2.5 text-center text-sm leading-normal font-semibold text-white transition-colors hover:bg-violet-600 hover:text-white;
+  }
+  .button-ghost {
+    @apply border-line bg-transparent text-slate-200 hover:bg-slate-800;
+  }
+  .button-small {
+    @apply min-h-9 px-3 py-2 text-xs;
+  }
+  .button-danger {
+    @apply bg-rose-800 hover:bg-rose-700;
+  }
+  .icon-button {
+    @apply inline-grid size-10 shrink-0 place-items-center rounded-lg border border-line text-white hover:bg-slate-800;
+  }
+  .panel {
+    @apply rounded-2xl border border-line bg-surface p-6;
+  }
+  .eyebrow {
+    @apply mb-3 block text-xs font-bold tracking-widest text-accent uppercase;
+  }
+  .field-hint {
+    @apply text-xs font-normal text-muted;
+  }
+  .text-button {
+    @apply border-0 bg-transparent p-0 text-accent underline underline-offset-4;
+  }
+  .form-stack {
+    @apply flex flex-col gap-5;
+  }
+  .dialog-actions {
+    @apply mt-2 flex flex-wrap justify-end gap-3 border-t border-line pt-5;
+  }
+}
