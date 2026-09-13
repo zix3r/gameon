@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { errorMessage } from "../lib/api";
-import { type Game } from "../lib/types";
+import { type Game, type PageLinks } from "../lib/types";
 
 export function DataTable({
   label,
@@ -182,11 +182,13 @@ export function Pagination({
   onChange,
   busy = false,
   label = "Pages",
+  links,
 }: {
   page: number;
   pageSize: number;
   total: number;
-  onChange: (page: number) => void;
+  onChange: (page: number, href?: string) => void;
+  links: PageLinks;
   busy?: boolean;
   label?: string;
 }) {
@@ -199,8 +201,19 @@ export function Pagination({
     >
       <button
         className="button button-ghost"
-        disabled={busy || page <= 1}
-        onClick={() => onChange(Math.min(page - 1, pages))}
+        disabled={busy || !links.prev}
+        onClick={() => {
+          if (links.prev)
+            onChange(
+              Number(
+                new URL(
+                  links.prev.href,
+                  window.location.origin,
+                ).searchParams.get("page"),
+              ),
+              links.prev.href,
+            );
+        }}
       >
         <ChevronLeft size={16} aria-hidden="true" />
         Previous
@@ -210,8 +223,19 @@ export function Pagination({
       </span>
       <button
         className="button button-ghost"
-        disabled={busy || page >= pages}
-        onClick={() => onChange(page + 1)}
+        disabled={busy || !links.next}
+        onClick={() => {
+          if (links.next)
+            onChange(
+              Number(
+                new URL(
+                  links.next.href,
+                  window.location.origin,
+                ).searchParams.get("page"),
+              ),
+              links.next.href,
+            );
+        }}
       >
         Next
         <ChevronRight size={16} aria-hidden="true" />

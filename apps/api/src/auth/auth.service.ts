@@ -1,6 +1,7 @@
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Prisma, Role } from "@prisma/client";
+import { link } from "../common/links";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { isUUID } from "class-validator";
 import { DatabaseService } from "../database/database.service";
@@ -44,7 +45,7 @@ export class AuthService {
   ) {}
 
   private async tokenResponse(
-    user: UserView,
+    user: Omit<UserView, "_links">,
     sessionId: string,
     refreshToken: string,
     expiresAt: Date,
@@ -65,14 +66,17 @@ export class AuthService {
         accessToken,
         expiresIn: ACCESS_SECONDS,
         tokenType: "Bearer",
-        user,
+        user: { ...user, _links: { self: link("/auth/me") } },
       },
       refreshToken,
       expiresAt,
     };
   }
 
-  private async createSession(tx: Prisma.TransactionClient, user: UserView) {
+  private async createSession(
+    tx: Prisma.TransactionClient,
+    user: Omit<UserView, "_links">,
+  ) {
     const refreshToken = randomBytes(32).toString("base64url");
     const familyId = randomUUID();
     const expiresAt = new Date(Date.now() + REFRESH_MS);

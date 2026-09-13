@@ -88,7 +88,11 @@ export function GamePage() {
           </div>
         </div>
       </div>
-      <ReviewSection key={gameId} gameId={gameId} />
+      <ReviewSection
+        key={`${game.data.categoryId}:${gameId}`}
+        gameId={gameId}
+        reviewsHref={game.data._links.reviews.href}
+      />
       {ordering && (
         <OrderDialog game={game.data} onClose={() => setOrdering(false)} />
       )}

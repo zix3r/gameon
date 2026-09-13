@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { gameLinks, link } from "../common/links";
 import { type Game, type Prisma } from "@prisma/client";
 import { DatabaseService } from "../database/database.service";
 import { pagination, pageResult } from "../common/pagination.dto";
@@ -21,6 +22,7 @@ export class GamesService {
       price: game.price.toFixed(2),
       averageRating: byGame.get(game.id)?._avg.rating ?? null,
       reviewCount: byGame.get(game.id)?._count._all ?? 0,
+      _links: gameLinks(game.id, game.categoryId),
     }));
   }
 
@@ -39,7 +41,15 @@ export class GamesService {
       }),
       this.db.game.count({ where }),
     ]);
-    return pageResult(await this.views(items), total, query);
+    return pageResult(
+      await this.views(items),
+      total,
+      query,
+      "/games",
+      query.categoryId
+        ? { category: link(`/categories/${query.categoryId}`) }
+        : {},
+    );
   }
 
   async get(id: string) {

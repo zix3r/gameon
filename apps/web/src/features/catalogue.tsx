@@ -248,7 +248,12 @@ export function CataloguePage({
       api<Category>(`/categories/${fixedCategory}`, { signal }),
     enabled: !!fixedCategory,
   });
-  const games = useGames({ page, search, categoryId });
+  const games = useGames({
+    page,
+    search,
+    categoryId,
+    href: category.data?._links.games.href,
+  });
   if (fixedCategory && category.isPending) return <Loading />;
   if (fixedCategory && category.isError)
     return (
@@ -308,9 +313,11 @@ export function CataloguePage({
             page={page}
             pageSize={12}
             total={games.data.total}
+            links={games.data._links}
             busy={games.isFetching}
             label="Game pages"
-            onChange={(next) => {
+            onChange={(next, href) => {
+              games.followPage(href);
               const updated = new URLSearchParams(params);
               updated.set("page", String(next));
               setParams(updated);

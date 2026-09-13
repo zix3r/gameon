@@ -8,6 +8,7 @@ import { ReviewPage } from "./features/reviews";
 import { OrdersPage, OrderPage } from "./features/orders";
 import { AuthProvider, RequireAuth } from "./auth/AuthProvider";
 import { AuthPage } from "./auth/AuthPage";
+import { AccountPage } from "./auth/AccountPage";
 import { Layout } from "./components/Layout";
 import { ErrorState } from "./components/ui";
 import { CataloguePage, CategoryPage, HomePage } from "./features/catalogue";
@@ -55,6 +56,14 @@ export function App() {
             element={
               <RequireAuth admin>
                 <OrdersPage admin />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <RequireAuth>
+                <AccountPage />
               </RequireAuth>
             }
           />

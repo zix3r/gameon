@@ -1,11 +1,12 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { ApiError, SessionClient } from "./api";
+import { ApiError, SessionClient, apiUrl, withQuery } from "./api";
 
 const user = {
   id: "user-1",
   email: "demo@gameon.test",
   displayName: "Demo",
   role: "USER",
+  _links: { self: { href: "/api/auth/me" } },
 };
 const result = (token: string) => ({
   accessToken: token,
@@ -16,6 +17,47 @@ const result = (token: string) => ({
 const unauthorized = () =>
   Response.json({ message: "Unauthorized" }, { status: 401 });
 afterEach(() => vi.unstubAllGlobals());
+
+test("API links are followed without duplicating the prefix", async () => {
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValue(Response.json({ items: [] }));
+  vi.stubGlobal("fetch", fetcher);
+  await new SessionClient().api(
+    "/api/games?page=2&pageSize=10&search=Action%20%26%20RPG",
+  );
+  expect(fetcher.mock.calls[0]?.[0]).toBe(
+    "/api/games?page=2&pageSize=10&search=Action%20%26%20RPG",
+  );
+  expect(apiUrl("/games")).toBe("/api/games");
+  expect(
+    withQuery("/api/games?categoryId=cat", { page: 2, search: "A&B" }),
+  ).toBe("/api/games?categoryId=cat&page=2&search=A%26B");
+});
+
+test("untrusted and escaping links are rejected before credentials can be sent", async () => {
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValue(Response.json(result("token")));
+  vi.stubGlobal("fetch", fetcher);
+  const session = new SessionClient();
+  await session.signIn("login", { email: user.email, password: "Demo1234" });
+  fetcher.mockClear();
+  for (const href of [
+    "https://evil.test/api/games",
+    "//evil.test/api/games",
+    "/api/../outside",
+    "/api/%2e%2e/outside",
+    "/api/%2f%2fevil.test",
+    "/api/\\\\evil.test",
+    "javascript:alert(1)",
+  ]) {
+    await expect(session.api(href, { auth: true })).rejects.toMatchObject({
+      status: 400,
+    });
+  }
+  expect(fetcher).not.toHaveBeenCalled();
+});
 
 test("simultaneous protected requests share one refresh and retry with the new token", async () => {
   let refreshes = 0;
@@ -41,6 +83,36 @@ test("simultaneous protected requests share one refresh and retry with the new t
   ]);
   expect(refreshes).toBe(1);
   expect(session.getSnapshot().status).toBe("authenticated");
+});
+
+test("failed logout exposes retryable feedback and preserves the session", async () => {
+  let fail = true;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) => {
+      if (url === "/api/auth/login") return Response.json(result("token"));
+      if (fail) throw new TypeError("offline");
+      return new Response(null, { status: 204 });
+    }),
+  );
+  const session = new SessionClient();
+  await session.signIn("login", { email: user.email, password: "Demo1234" });
+  await expect(session.signOut()).rejects.toMatchObject({ status: 0 });
+  expect(session.getSnapshot()).toMatchObject({
+    status: "authenticated",
+    user,
+    errorAction: "logout",
+  });
+  expect(session.getSnapshot().error).toContain(
+    "Sign-out could not be confirmed",
+  );
+  fail = false;
+  await session.signOut();
+  expect(session.getSnapshot()).toEqual({
+    status: "guest",
+    user: null,
+    error: null,
+  });
 });
 
 test("logout cannot be undone by an in-flight refresh", async () => {

@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
+import { orderLinks } from "../common/links";
 import { Role, type Order } from "@prisma/client";
 import { type CurrentIdentity } from "../auth/auth.dto";
 import { DatabaseService } from "../database/database.service";
@@ -9,6 +10,7 @@ const game = { select: { id: true, title: true } } as const;
 function orderView<T extends Order>(order: T) {
   return {
     ...order,
+    _links: orderLinks(order.id, order.gameId),
     unitPriceAtPurchase: order.unitPriceAtPurchase.toFixed(2),
   };
 }
@@ -49,7 +51,7 @@ export class OrdersService {
       }),
       this.db.order.count({ where }),
     ]);
-    return pageResult(items.map(orderView), total, query);
+    return pageResult(items.map(orderView), total, query, "/orders");
   }
 
   async get(id: string, user: CurrentIdentity) {

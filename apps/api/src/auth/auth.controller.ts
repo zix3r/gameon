@@ -42,6 +42,7 @@ import {
 } from "./auth.dto";
 import { CookieOriginGuard } from "./auth.guards";
 import { AuthService } from "./auth.service";
+import { link } from "../common/links";
 
 const csrfHeader = {
   name: "X-GameON-CSRF",
@@ -173,6 +174,7 @@ export class AuthController {
   @ApiOkResponse({ type: UserView })
   me(@CurrentUser() user: CurrentIdentity): UserView {
     return {
+      _links: { self: link("/auth/me") },
       id: user.id,
       email: user.email,
       displayName: user.displayName,

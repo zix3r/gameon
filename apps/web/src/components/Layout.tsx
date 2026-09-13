@@ -6,10 +6,18 @@ import {
   LogOut,
   ShieldCheck,
   ArrowUpRight,
+  ShoppingBag,
+  UserRound,
+  LogIn,
+  UserPlus,
+  FolderTree,
+  LayoutDashboard,
+  MessageSquare,
 } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router";
 import { useAuth } from "../auth/AuthProvider";
 import { session } from "../lib/api";
+import { Notice } from "./ui";
 
 function Header() {
   const auth = useAuth();
@@ -19,7 +27,7 @@ function Header() {
     `flex items-center gap-1 py-3 whitespace-nowrap md:py-0 ${isActive ? "text-white" : "text-muted"}`;
   return (
     <header className="border-b border-line bg-[#11182a]">
-      <div className="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center gap-x-8 px-4 md:flex-nowrap md:px-6">
+      <div className="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center gap-x-8 px-4 md:flex-nowrap md:gap-x-5 md:px-6">
         <Link
           className="flex shrink-0 items-center text-2xl font-extrabold tracking-tighter text-white"
           to="/"
@@ -37,12 +45,15 @@ function Header() {
           aria-expanded={open}
           aria-controls="main-navigation"
           onClick={() => setOpen(!open)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setOpen(false);
+          }}
         >
           {open ? <X /> : <Menu />}
         </button>
         <nav
           id="main-navigation"
-          className={`${open ? "flex" : "hidden"} w-full flex-col pb-4 text-sm font-medium md:flex md:flex-1 md:flex-row md:items-center md:gap-5 md:pb-0`}
+          className={`${open ? "flex" : "hidden"} w-full flex-col pb-4 text-sm font-medium md:flex md:flex-1 md:flex-row md:items-center md:gap-4 md:pb-0`}
           aria-label="Main navigation"
           onKeyDown={(event) => {
             if (event.key === "Escape") {
@@ -56,6 +67,7 @@ function Header() {
             to="/games"
             onClick={() => setOpen(false)}
           >
+            <Gamepad2 size={16} aria-hidden="true" />
             Discover games
           </NavLink>
           {auth.user && (
@@ -64,7 +76,18 @@ function Header() {
               to="/orders"
               onClick={() => setOpen(false)}
             >
+              <ShoppingBag size={16} aria-hidden="true" />
               My orders
+            </NavLink>
+          )}
+          {auth.user && (
+            <NavLink
+              className={linkClass}
+              to="/account"
+              onClick={() => setOpen(false)}
+            >
+              <UserRound size={16} aria-hidden="true" />
+              My account
             </NavLink>
           )}
           {auth.user?.role === "ADMIN" && (
@@ -87,7 +110,7 @@ function Header() {
                   {auth.user.displayName}
                 </span>
                 <button
-                  className="button button-small button-ghost"
+                  className="button button-small button-ghost shrink-0 whitespace-nowrap"
                   disabled={auth.status === "loading"}
                   onClick={() => {
                     void session.signOut().catch(() => undefined);
@@ -103,7 +126,12 @@ function Header() {
               </span>
             ) : (
               <>
-                <NavLink to="/login" onClick={() => setOpen(false)}>
+                <NavLink
+                  className="inline-flex items-center gap-1"
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                >
+                  <LogIn size={16} aria-hidden="true" />
                   Sign in
                 </NavLink>
                 <Link
@@ -111,6 +139,7 @@ function Header() {
                   to="/register"
                   onClick={() => setOpen(false)}
                 >
+                  <UserPlus size={16} aria-hidden="true" />
                   Join GameON
                 </Link>
               </>
@@ -124,6 +153,7 @@ function Header() {
 
 export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const auth = useAuth();
   const main = useRef<HTMLElement>(null);
   const first = useRef(true);
   useEffect(() => {
@@ -149,6 +179,24 @@ export function Layout({ children }: { children: ReactNode }) {
         tabIndex={-1}
         className="mx-auto w-full max-w-7xl flex-1 px-4 pt-6 pb-16 outline-none md:px-6 md:pt-10"
       >
+        {auth.error && (
+          <Notice>
+            <p className="mb-2">{auth.error}</p>
+            <button
+              className="text-button"
+              disabled={auth.status === "loading"}
+              onClick={() => {
+                if (auth.errorAction === "logout")
+                  void session.signOut().catch(() => undefined);
+                else void session.restore();
+              }}
+            >
+              {auth.errorAction === "logout"
+                ? "Retry sign out"
+                : "Retry session restoration"}
+            </button>
+          </Notice>
+        )}
         {children}
       </main>
       <footer className="border-t border-line bg-[#080d19] py-8 text-xs text-muted">
@@ -160,7 +208,11 @@ export function Layout({ children }: { children: ReactNode }) {
             <p className="mb-0 mt-2">Find your next favourite game.</p>
           </div>
           <nav className="flex gap-6" aria-label="Footer navigation">
-            <Link className="text-muted" to="/games">
+            <Link
+              className="inline-flex items-center gap-1 text-muted"
+              to="/games"
+            >
+              <Gamepad2 size={14} aria-hidden="true" />
               Catalogue
             </Link>
             <a
@@ -185,25 +237,30 @@ export function Layout({ children }: { children: ReactNode }) {
 
 export function AdminNavigation() {
   const style = ({ isActive }: { isActive: boolean }) =>
-    `rounded-lg px-4 py-2 text-sm whitespace-nowrap ${isActive ? "bg-violet-950 text-white" : "text-muted"}`;
+    `inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm whitespace-nowrap ${isActive ? "bg-violet-950 text-white" : "text-muted"}`;
   return (
     <nav
       className="mb-6 flex gap-2 overflow-x-auto border-b border-line pb-4"
       aria-label="Administration"
     >
       <NavLink className={style} to="/admin" end>
+        <LayoutDashboard size={16} aria-hidden="true" />
         Overview
       </NavLink>
       <NavLink className={style} to="/admin/categories">
+        <FolderTree size={16} aria-hidden="true" />
         Categories
       </NavLink>
       <NavLink className={style} to="/admin/games">
+        <Gamepad2 size={16} aria-hidden="true" />
         Games
       </NavLink>
       <NavLink className={style} to="/admin/reviews">
+        <MessageSquare size={16} aria-hidden="true" />
         Reviews
       </NavLink>
       <NavLink className={style} to="/admin/orders">
+        <ShoppingBag size={16} aria-hidden="true" />
         All orders
       </NavLink>
     </nav>

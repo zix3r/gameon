@@ -20,10 +20,14 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
-import { ApiPage, PaginationDto } from "../common/pagination.dto";
+import { ApiPage } from "../common/pagination.dto";
 import { NonEmptyBodyPipe } from "../common/input";
 import { CategoryView } from "../common/views";
-import { CreateCategoryDto, UpdateCategoryDto } from "./categories.dto";
+import {
+  CategoriesQueryDto,
+  CreateCategoryDto,
+  UpdateCategoryDto,
+} from "./categories.dto";
 import { CategoriesService } from "./categories.service";
 import { AdminOnly, Public } from "../auth/auth.decorators";
 
@@ -37,7 +41,7 @@ export class CategoriesController {
   @Public()
   @ApiOperation({ summary: "List categories" })
   @ApiPage(CategoryView)
-  list(@Query() query: PaginationDto) {
+  list(@Query() query: CategoriesQueryDto) {
     return this.categories.list(query);
   }
 

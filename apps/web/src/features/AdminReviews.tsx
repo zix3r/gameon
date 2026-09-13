@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router";
 import { MessageSquare } from "lucide-react";
-import { api } from "../lib/api";
-import { pageNumber, useGame, useGames } from "../lib/queries";
+import { api, withQuery } from "../lib/api";
+import { pageNumber, useGame, useGames, usePageUrl } from "../lib/queries";
 import { type Page, type Review } from "../lib/types";
 import { AdminNavigation } from "../components/Layout";
 import {
@@ -68,8 +68,10 @@ function GamePicker() {
         page={page}
         pageSize={8}
         total={games.data.total}
+        links={games.data._links}
         busy={games.isFetching}
-        onChange={(next) => {
+        onChange={(next, href) => {
+          games.followPage(href);
           const updated = new URLSearchParams(params);
           updated.set("page", String(next));
           setParams(updated);
@@ -83,21 +85,29 @@ function GameReviews({ gameId }: { gameId: string }) {
   const [params, setParams] = useSearchParams();
   const page = pageNumber(params.get("page"));
   const game = useGame(gameId);
+  const navigation = usePageUrl(
+    withQuery(`/games/${gameId}/reviews`, {
+      page,
+      pageSize: 10,
+    }),
+  );
   const reviews = useQuery({
     queryKey: ["reviews", gameId, { page, admin: true }],
+    enabled: !!game.data,
     queryFn: ({ signal }) =>
-      api<Page<Review>>(`/games/${gameId}/reviews?page=${page}&pageSize=10`, {
+      api<Page<Review>>(navigation.url, {
         signal,
       }),
   });
   function changePage(page: number) {
     setParams({ gameId, page: String(page) });
   }
-  if (game.isPending || reviews.isPending) return <Loading />;
+  if (game.isPending) return <Loading />;
   if (game.isError)
     return (
       <ErrorState error={game.error} onRetry={() => void game.refetch()} />
     );
+  if (reviews.isPending) return <Loading />;
   if (reviews.isError)
     return (
       <ErrorState
@@ -132,8 +142,12 @@ function GameReviews({ gameId }: { gameId: string }) {
         page={page}
         pageSize={10}
         total={reviews.data.total}
+        links={reviews.data._links}
         busy={reviews.isFetching}
-        onChange={changePage}
+        onChange={(next, href) => {
+          navigation.followPage(href);
+          changePage(next);
+        }}
       />
     </>
   );

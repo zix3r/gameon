@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { CategoryLinksView, GameLinksView, GameChildLinksView } from "./links";
 
 export class RecordView {
   @ApiProperty({ format: "uuid" }) id!: string;
@@ -10,11 +11,13 @@ export class EditableView extends RecordView {
 }
 
 export class CategoryView extends EditableView {
+  @ApiProperty({ type: CategoryLinksView }) _links!: CategoryLinksView;
   @ApiProperty() name!: string;
   @ApiProperty() description!: string;
 }
 
 export class GameView extends EditableView {
+  @ApiProperty({ type: GameLinksView }) _links!: GameLinksView;
   @ApiProperty({ format: "uuid" }) categoryId!: string;
   @ApiProperty() title!: string;
   @ApiProperty() description!: string;
@@ -35,6 +38,7 @@ export class AuthorView {
 }
 
 export class ReviewView extends EditableView {
+  @ApiProperty({ type: GameChildLinksView }) _links!: GameChildLinksView;
   @ApiProperty({ format: "uuid" }) gameId!: string;
   @ApiProperty({ format: "uuid" }) authorId!: string;
   @ApiProperty() text!: string;
@@ -48,6 +52,7 @@ export class OrderedGameView {
 }
 
 export class OrderView extends RecordView {
+  @ApiProperty({ type: GameChildLinksView }) _links!: GameChildLinksView;
   @ApiProperty({ format: "uuid" }) gameId!: string;
   @ApiProperty({ format: "uuid" }) userId!: string;
   @ApiProperty({ example: "19.99" }) unitPriceAtPurchase!: string;

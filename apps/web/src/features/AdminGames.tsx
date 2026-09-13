@@ -38,7 +38,7 @@ export function GameEditor({
   const [categoryId, setCategoryId] = useState(game?.categoryId ?? "");
   const mutation = useMutation({
     mutationFn: (body: GameInput) =>
-      api<Game>(`/games${game ? `/${game.id}` : ""}`, {
+      api<Game>(game?._links.self.href ?? "/games", {
         method: game ? "PATCH" : "POST",
         auth: true,
         body,
@@ -197,8 +197,8 @@ export function AdminGames() {
   const [deleting, setDeleting] = useState<Game | null>(null);
   const [message, setMessage] = useState("");
   const mutation = useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/games/${id}`, { method: "DELETE", auth: true }),
+    mutationFn: (href: string) =>
+      api<void>(href, { method: "DELETE", auth: true }),
     onSuccess: async () => {
       await invalidateCatalogue(client);
       setDeleting(null);
@@ -315,8 +315,10 @@ export function AdminGames() {
             page={page}
             pageSize={10}
             total={games.data.total}
+            links={games.data._links}
             busy={games.isFetching}
-            onChange={(next) => {
+            onChange={(next, href) => {
+              games.followPage(href);
               const updated = new URLSearchParams(params);
               updated.set("page", String(next));
               setParams(updated);
@@ -337,7 +339,7 @@ export function AdminGames() {
           confirmLabel="Delete game"
           pending={mutation.isPending}
           error={mutation.error}
-          onConfirm={() => mutation.mutate(deleting.id)}
+          onConfirm={() => mutation.mutate(deleting._links.self.href)}
           onClose={() => setDeleting(null)}
         >
           <p>

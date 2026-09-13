@@ -18,13 +18,45 @@ interface RequestOptions {
   csrf?: boolean;
 }
 
+export function apiUrl(path: string): string {
+  if (!path.startsWith("/") || path.startsWith("//") || /[\\\\\s#]/.test(path))
+    throw new ApiError(400, "Invalid API link.");
+  const prefixed = path.startsWith("/api/") ? path : `/api${path}`;
+  try {
+    const pathname = prefixed.split("?")[0]!;
+    for (const segment of pathname.split("/")) {
+      const decoded = decodeURIComponent(segment);
+      if (decoded === "." || decoded === ".." || /[/\\\\]/.test(decoded))
+        throw new Error("Invalid segment");
+    }
+    const url = new URL(prefixed, "https://gameon.invalid");
+    if (!url.pathname.startsWith("/api/")) throw new Error("Invalid path");
+    return url.pathname + url.search;
+  } catch {
+    throw new ApiError(400, "Invalid API link.");
+  }
+}
+
+export function withQuery(
+  path: string,
+  query: Record<string, string | number | undefined>,
+): string {
+  const url = new URL(apiUrl(path), "https://gameon.invalid");
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined) url.searchParams.delete(key);
+    else url.searchParams.set(key, String(value));
+  }
+  return url.pathname + url.search;
+}
+
 async function request<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
+  const url = apiUrl(path);
   let response: Response;
   try {
-    response = await fetch(`/api${path}`, {
+    response = await fetch(url, {
       method: options.method ?? "GET",
       credentials: "same-origin",
       signal: options.signal,
@@ -73,6 +105,7 @@ export interface SessionState {
   status: "loading" | "authenticated" | "guest" | "error";
   user: User | null;
   error: string | null;
+  errorAction?: "logout" | "refresh";
 }
 
 export class SessionClient {
@@ -145,6 +178,7 @@ export class SessionClient {
           ...this.state,
           status: this.state.user ? "authenticated" : "error",
           error: `Your session could not be restored. ${errorMessage(error)}`,
+          errorAction: "refresh",
         });
         throw error;
       }
@@ -202,6 +236,7 @@ export class SessionClient {
         this.set({
           ...previous,
           error: "Sign-out could not be confirmed. Please try again.",
+          errorAction: "logout",
         });
       }
       throw error;

@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { api, errorMessage } from "../lib/api";
-import { invalidateCatalogue, pageNumber, useCategories } from "../lib/queries";
-import { type Category } from "../lib/types";
+import { invalidateCatalogue, pageNumber, usePageUrl } from "../lib/queries";
+import { type Category, type Page } from "../lib/types";
 import { AdminNavigation } from "../components/Layout";
 import {
   ConfirmDialog,
@@ -28,7 +28,7 @@ export function CategoryEditor({
   const client = useQueryClient();
   const mutation = useMutation({
     mutationFn: (body: { name: string; description: string }) =>
-      api<Category>(`/categories${category ? `/${category.id}` : ""}`, {
+      api<Category>(category?._links.self.href ?? "/categories", {
         method: category ? "PATCH" : "POST",
         auth: true,
         body,
@@ -95,24 +95,31 @@ export function CategoryEditor({
 }
 
 export function AdminCategories() {
-  const categories = useCategories();
   const client = useQueryClient();
   const [params, setParams] = useSearchParams();
   const page = pageNumber(params.get("page"));
+  const search = params.get("search") ?? "";
+  const navigation = usePageUrl(
+    `/categories?${new URLSearchParams({ page: String(page), pageSize: "10", ...(search ? { search } : {}) })}`,
+  );
+  const categories = useQuery({
+    queryKey: ["categories", { page, search }],
+    queryFn: ({ signal }) => api<Page<Category>>(navigation.url, { signal }),
+  });
   const [editor, setEditor] = useState<{ category?: Category } | null>(null);
   const [deleting, setDeleting] = useState<Category | null>(null);
   const [message, setMessage] = useState("");
   const mutation = useMutation({
-    mutationFn: (id: string) =>
-      api<void>(`/categories/${id}`, { method: "DELETE", auth: true }),
+    mutationFn: (href: string) =>
+      api<void>(href, { method: "DELETE", auth: true }),
     onSuccess: async () => {
       await invalidateCatalogue(client);
       setDeleting(null);
-      setParams({});
+      setParams(search ? { search } : {});
       setMessage("Category deleted.");
     },
   });
-  const items = categories.data?.slice((page - 1) * 10, page * 10) ?? [];
+  const items = categories.data?.items ?? [];
   return (
     <>
       <AdminNavigation />
@@ -126,6 +133,35 @@ export function AdminCategories() {
           New category
         </button>
       </PageHeading>
+      <form
+        key={search}
+        className="mb-6 flex flex-wrap items-end gap-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const value = String(
+            new FormData(event.currentTarget).get("search") ?? "",
+          ).trim();
+          setParams(value ? { search: value } : {});
+        }}
+      >
+        <label className="min-w-44 flex-1">
+          Search categories
+          <input
+            type="search"
+            name="search"
+            maxLength={100}
+            defaultValue={search}
+          />
+        </label>
+        <button className="button">Search</button>
+        <button
+          type="button"
+          className="button button-ghost"
+          onClick={() => setParams({})}
+        >
+          Reset
+        </button>
+      </form>
       {message && <Notice kind="success">{message}</Notice>}
       {categories.isPending ? (
         <Loading />
@@ -193,8 +229,12 @@ export function AdminCategories() {
           <Pagination
             page={page}
             pageSize={10}
-            total={categories.data.length}
-            onChange={(next) => setParams({ page: String(next) })}
+            total={categories.data.total}
+            links={categories.data._links}
+            onChange={(next, href) => {
+              navigation.followPage(href);
+              setParams({ ...(search ? { search } : {}), page: String(next) });
+            }}
           />
         </>
       )}
@@ -211,7 +251,7 @@ export function AdminCategories() {
           confirmLabel="Delete category"
           pending={mutation.isPending}
           error={mutation.error}
-          onConfirm={() => mutation.mutate(deleting.id)}
+          onConfirm={() => mutation.mutate(deleting._links.self.href)}
           onClose={() => setDeleting(null)}
         >
           <p>

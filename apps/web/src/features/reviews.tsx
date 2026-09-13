@@ -3,8 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router";
 import { Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
-import { api, errorMessage } from "../lib/api";
-import { date, invalidateReviews, useGame } from "../lib/queries";
+import { api, errorMessage, withQuery } from "../lib/api";
+import { date, invalidateReviews, useGame, usePageUrl } from "../lib/queries";
 import { type Page, type Review } from "../lib/types";
 import {
   BackLink,
@@ -32,7 +32,7 @@ export function ReviewEditor({
   const [rating, setRating] = useState(review?.rating ?? 5);
   const mutation = useMutation({
     mutationFn: () =>
-      api<Review>(`/games/${gameId}/reviews${review ? `/${review.id}` : ""}`, {
+      api<Review>(review?._links.self.href ?? `/games/${gameId}/reviews`, {
         method: review ? "PATCH" : "POST",
         auth: true,
         body: { text: text.trim(), rating },
@@ -143,7 +143,7 @@ export function ReviewCard({
   const own = auth.user?.id === review.authorId;
   const mutation = useMutation({
     mutationFn: () =>
-      api<void>(`/games/${review.gameId}/reviews/${review.id}`, {
+      api<void>(review._links.self.href, {
         method: "DELETE",
         auth: true,
       }),
@@ -257,14 +257,21 @@ export function ReviewCard({
   );
 }
 
-export function ReviewSection({ gameId }: { gameId: string }) {
+export function ReviewSection({
+  gameId,
+  reviewsHref,
+}: {
+  gameId: string;
+  reviewsHref: string;
+}) {
   const auth = useAuth();
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(false);
+  const navigation = usePageUrl(withQuery(reviewsHref, { page, pageSize: 5 }));
   const reviews = useQuery({
-    queryKey: ["reviews", gameId, { page }],
+    queryKey: ["reviews", gameId, { page, reviewsHref }],
     queryFn: ({ signal }) =>
-      api<Page<Review>>(`/games/${gameId}/reviews?page=${page}&pageSize=5`, {
+      api<Page<Review>>(navigation.url, {
         signal,
       }),
   });
@@ -272,7 +279,7 @@ export function ReviewSection({ gameId }: { gameId: string }) {
     queryKey: ["reviews", gameId, { authorId: auth.user?.id }],
     queryFn: ({ signal }) =>
       api<Page<Review>>(
-        `/games/${gameId}/reviews?authorId=${auth.user!.id}&pageSize=1`,
+        withQuery(reviewsHref, { authorId: auth.user!.id, pageSize: 1 }),
         { signal },
       ),
     enabled: !!auth.user,
@@ -347,8 +354,12 @@ export function ReviewSection({ gameId }: { gameId: string }) {
             page={page}
             pageSize={5}
             total={reviews.data.total}
+            links={reviews.data._links}
             busy={reviews.isFetching}
-            onChange={setPage}
+            onChange={(next, href) => {
+              navigation.followPage(href);
+              setPage(next);
+            }}
           />
         </>
       )}

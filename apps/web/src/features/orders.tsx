@@ -10,7 +10,7 @@ import {
 import { CheckCircle2, ShoppingBag } from "lucide-react";
 import { useAuth } from "../auth/AuthProvider";
 import { api, errorMessage } from "../lib/api";
-import { date, money, pageNumber } from "../lib/queries";
+import { date, money, pageNumber, usePageUrl } from "../lib/queries";
 import { type Game, type Order, type Page } from "../lib/types";
 import {
   BackLink,
@@ -117,6 +117,7 @@ export function OrdersPage({ admin = false }: { admin?: boolean }) {
     pageSize: "9",
     ...(userId ? { userId } : {}),
   });
+  const navigation = usePageUrl(`/orders?${query}`);
   const orders = useQuery({
     queryKey: [
       "private",
@@ -126,7 +127,7 @@ export function OrdersPage({ admin = false }: { admin?: boolean }) {
       { page, userId, admin },
     ],
     queryFn: ({ signal }) =>
-      api<Page<Order>>(`/orders?${query}`, { auth: true, signal }),
+      api<Page<Order>>(navigation.url, { auth: true, signal }),
     enabled: !!user,
   });
   function filter(event: FormEvent<HTMLFormElement>) {
@@ -242,9 +243,11 @@ export function OrdersPage({ admin = false }: { admin?: boolean }) {
             page={page}
             pageSize={9}
             total={orders.data.total}
+            links={orders.data._links}
             busy={orders.isFetching}
             label="Order pages"
-            onChange={(next) => {
+            onChange={(next, href) => {
+              navigation.followPage(href);
               const updated = new URLSearchParams(params);
               updated.set("page", String(next));
               setParams(updated);

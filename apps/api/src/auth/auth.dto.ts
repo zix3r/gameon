@@ -3,6 +3,7 @@ import { Transform } from "class-transformer";
 import { IsEmail, IsString, Length, MaxLength } from "class-validator";
 import { Role } from "@prisma/client";
 import { Trim } from "../common/input";
+import { ResourceLinksView } from "../common/links";
 
 export class LoginDto {
   @ApiProperty({ example: "demo@gameon.test", maxLength: 254 })
@@ -33,6 +34,7 @@ export class RegisterDto extends LoginDto {
 }
 
 export class UserView {
+  @ApiProperty({ type: ResourceLinksView }) _links!: ResourceLinksView;
   @ApiProperty({ format: "uuid" }) id!: string;
   @ApiProperty({ format: "email" }) email!: string;
   @ApiProperty() displayName!: string;
@@ -46,6 +48,6 @@ export class AuthView {
   @ApiProperty({ type: UserView }) user!: UserView;
 }
 
-export interface CurrentIdentity extends UserView {
+export interface CurrentIdentity extends Omit<UserView, "_links"> {
   sessionId: string;
 }

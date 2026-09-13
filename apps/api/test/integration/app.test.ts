@@ -15,7 +15,11 @@ import {
   type OrderView,
 } from "../../src/common/views";
 
-type Page<T> = { items: T[]; total: number };
+type Page<T> = {
+  items: T[];
+  total: number;
+  _links: { self: { href: string }; next?: { href: string } };
+};
 
 test("Core application flows", async (t) => {
   assert.match(
@@ -24,7 +28,7 @@ test("Core application flows", async (t) => {
   );
   const db = new PrismaClient();
   const app = await NestFactory.create(AppModule, { logger: false });
-  configureApp(app);
+  const specification = configureApp(app);
   const email = `${randomUUID()}@example.test`;
   const adminEmail = `admin-${email}`;
   const password = "Demo1234";
@@ -72,7 +76,15 @@ test("Core application flows", async (t) => {
     ): Promise<T> {
       const response = await send(method, path, body, token);
       assert.equal(response.status, status, `${method} ${path}`);
-      return status === 204 ? (undefined as T) : ((await response.json()) as T);
+      if (status === 204) {
+        assert.equal(await response.text(), "");
+        return undefined as T;
+      }
+      assert.match(
+        response.headers.get("content-type") ?? "",
+        /application\/json/,
+      );
+      return (await response.json()) as T;
     }
     const admin = await request<AuthView>("POST", "/auth/login", 200, {
       email: adminEmail,
@@ -155,6 +167,25 @@ test("Core application flows", async (t) => {
           200,
         );
         assert.ok(categories.items.some((item) => item.id === category.id));
+        const filtered = await request<Page<CategoryView>>(
+          "GET",
+          `/categories?search=${encodeURIComponent(category.name.toUpperCase())}&pageSize=1`,
+          200,
+        );
+        assert.equal(filtered.total, 1);
+        assert.equal(filtered.items[0]?.id, category.id);
+        assert.deepEqual(
+          (
+            await request<Page<CategoryView>>(
+              "GET",
+              `/categories?search=${randomUUID()}`,
+              200,
+            )
+          ).items,
+          [],
+        );
+        await request("GET", "/categories?search=", 400);
+        await request("GET", "/categories?pageSize=101", 400);
         assert.equal(
           (
             await request<CategoryView>(
@@ -186,6 +217,30 @@ test("Core application flows", async (t) => {
           adminToken,
         );
         assert.equal(game.averageRating, null);
+        assert.equal(game._links.self.href, `/api/games/${game.id}`);
+        assert.equal(game._links.category.href, category._links.self.href);
+        await request("GET", category._links.games.href.slice(4), 200);
+        await request("GET", game._links.reviews.href.slice(4), 200);
+        const nested = `/categories/${category.id}/games/${game.id}/reviews`;
+        assert.deepEqual(
+          (await request<Page<ReviewView>>("GET", nested, 200)).items,
+          [],
+        );
+        await request(
+          "GET",
+          `/categories/${randomUUID()}/games/${game.id}/reviews`,
+          404,
+        );
+        await request(
+          "GET",
+          `/categories/${category.id}/games/${randomUUID()}/reviews`,
+          404,
+        );
+        await request(
+          "GET",
+          `/categories/invalid/games/${game.id}/reviews`,
+          400,
+        );
         const games = await request<Page<GameView>>(
           "GET",
           `/games?categoryId=${category.id}&search=portal&pageSize=1`,
@@ -253,10 +308,107 @@ test("Core application flows", async (t) => {
         200,
       );
       assert.equal(reviews.total, 1);
+      const linkedReview = reviews.items[0]!;
+      assert.equal(
+        linkedReview._links.self.href,
+        `/api/games/${game.id}/reviews/${review.id}`,
+      );
+      await request("GET", linkedReview._links.self.href.slice(4), 200);
+      await request("GET", reviews._links.self.href.slice(4), 200);
+      const nested = await request<Page<ReviewView>>(
+        "GET",
+        `/categories/${category.id}/games/${game.id}/reviews?authorId=${owner.user.id}&pageSize=1`,
+        200,
+      );
+      assert.equal(nested.items[0]?.id, review.id);
+      const wrongCategory = await request<CategoryView>(
+        "POST",
+        "/categories",
+        201,
+        { name: `Wrong ${email}`, description: "Another category" },
+        adminToken,
+      );
+      await request(
+        "GET",
+        `/categories/${wrongCategory.id}/games/${game.id}/reviews`,
+        404,
+      );
+      await request(
+        "DELETE",
+        `/categories/${wrongCategory.id}`,
+        204,
+        undefined,
+        adminToken,
+      );
       const rated = await request<GameView>("GET", `/games/${game.id}`, 200);
       assert.equal(rated.averageRating, 4);
       assert.equal(rated.reviewCount, 1);
       await request("GET", `/games/${randomUUID()}/reviews/${review.id}`, 404);
+    });
+
+    await t.test("input boundaries and hypermedia contracts", async () => {
+      const reviewPath = `/games/${game.id}/reviews/${review.id}`;
+      for (const body of [
+        {},
+        { rating: null },
+        { rating: 0 },
+        { rating: 6 },
+        { rating: "5" },
+        { authorId: other.user.id },
+      ]) {
+        await request("PATCH", reviewPath, 400, body, owner.accessToken);
+      }
+      for (const body of [
+        {},
+        { price: null },
+        { title: null },
+        { price: "100000000.00" },
+      ]) {
+        await request("PATCH", `/games/${game.id}`, 400, body, adminToken);
+      }
+      await request("PATCH", `/categories/${category.id}`, 400, {}, adminToken);
+      await request(
+        "PATCH",
+        `/categories/${category.id}`,
+        400,
+        { name: null },
+        adminToken,
+      );
+      await request("GET", "/games?pageSize=1000000", 400);
+      const beyond = await request<Page<GameView>>(
+        "GET",
+        "/games?page=999&pageSize=10",
+        200,
+      );
+      assert.deepEqual(beyond.items, []);
+      const noMatch = await request<Page<GameView>>(
+        "GET",
+        `/games?search=${randomUUID()}`,
+        200,
+      );
+      assert.deepEqual(noMatch.items, []);
+      assert.equal(
+        (
+          await request<AuthView>("POST", "/auth/login", 200, {
+            email,
+            password,
+          })
+        ).user._links.self.href,
+        "/api/auth/me",
+      );
+      const nested =
+        specification.paths[
+          "/api/categories/{categoryId}/games/{gameId}/reviews"
+        ];
+      assert.ok(nested?.get?.responses["200"]);
+      const schema = specification.components?.schemas?.GameView;
+      assert.ok(schema && "properties" in schema && schema.properties?._links);
+      const categoryPage = await request<Page<CategoryView>>(
+        "GET",
+        "/categories?pageSize=1",
+        200,
+      );
+      await request("GET", categoryPage._links.self.href.slice(4), 200);
     });
 
     await t.test(
@@ -277,6 +429,14 @@ test("Core application flows", async (t) => {
           owner.accessToken,
         );
         assert.equal(order.userId, owner.user.id);
+        await request(
+          "GET",
+          order._links.self.href.slice(4),
+          200,
+          undefined,
+          owner.accessToken,
+        );
+        await request("GET", order._links.game.href.slice(4), 200);
         await request(
           "GET",
           `/orders/${order.id}`,

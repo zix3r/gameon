@@ -1,5 +1,34 @@
 import { QueryClient, keepPreviousData, useQuery } from "@tanstack/react-query";
-import { api } from "./api";
+import { api, apiUrl, withQuery } from "./api";
+import { useState } from "react";
+
+export function usePageUrl(path: string) {
+  const parsed = new URL(apiUrl(path), "https://gameon.invalid");
+  const page = parsed.searchParams.get("page") ?? "1";
+  parsed.searchParams.delete("page");
+  parsed.searchParams.sort();
+  const scope = parsed.pathname + parsed.search;
+  const [selected, setSelected] = useState<{
+    scope: string;
+    page: string;
+    href: string;
+  }>();
+  return {
+    url:
+      selected?.scope === scope && selected.page === page
+        ? selected.href
+        : path,
+    followPage: (href?: string) => {
+      if (!href) return;
+      const target = new URL(apiUrl(href), "https://gameon.invalid");
+      setSelected({
+        scope,
+        page: target.searchParams.get("page") ?? "1",
+        href: apiUrl(href),
+      });
+    },
+  };
+}
 import { type Category, type Game, type Page } from "./types";
 
 export const queryClient = new QueryClient({
@@ -17,23 +46,27 @@ export function useGames({
   pageSize = 12,
   search = "",
   categoryId = "",
+  href = "/games",
 }: {
   page?: number;
   pageSize?: number;
   search?: string;
   categoryId?: string;
+  href?: string;
 } = {}) {
-  const query = new URLSearchParams({
-    page: String(page),
-    pageSize: String(pageSize),
+  const path = withQuery(href, {
+    page,
+    pageSize,
+    search: search || undefined,
+    categoryId: categoryId || undefined,
   });
-  if (search) query.set("search", search);
-  if (categoryId) query.set("categoryId", categoryId);
-  return useQuery({
-    queryKey: ["games", query.toString()],
-    queryFn: ({ signal }) => api<Page<Game>>(`/games?${query}`, { signal }),
+  const navigation = usePageUrl(path);
+  const result = useQuery({
+    queryKey: ["games", apiUrl(path)],
+    queryFn: ({ signal }) => api<Page<Game>>(navigation.url, { signal }),
     placeholderData: keepPreviousData,
   });
+  return { ...result, followPage: navigation.followPage };
 }
 
 export function useGame(id: string) {
@@ -49,14 +82,11 @@ async function allCategories(signal: AbortSignal): Promise<Category[]> {
     signal,
   });
   const items = [...first.items];
-  for (let page = 2; (page - 1) * 100 < first.total; page++) {
-    items.push(
-      ...(
-        await api<Page<Category>>(`/categories?pageSize=100&page=${page}`, {
-          signal,
-        })
-      ).items,
-    );
+  let next = first._links.next;
+  while (next) {
+    const result = await api<Page<Category>>(next.href, { signal });
+    items.push(...result.items);
+    next = result._links.next;
   }
   return items;
 }

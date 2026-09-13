@@ -172,6 +172,17 @@ async function demonstrate() {
   );
   const reviews = await call("GET", `/games/${game.id}/reviews`, 200);
   assert.equal(reviews.items[0].id, review.id);
+  const nested = await call(
+    "GET",
+    `/categories/${category.id}/games/${game.id}/reviews`,
+    200,
+  );
+  assert.equal(nested.items[0].id, review.id);
+  await call(
+    "GET",
+    `/categories/${randomUUID()}/games/${game.id}/reviews`,
+    404,
+  );
   await call("GET", `/games/${game.id}/reviews/${review.id}`, 200);
   const updated = await call(
     "PATCH",
