@@ -37,7 +37,7 @@ export function AdminOverview() {
     },
     {
       title: "Games",
-      description: "Manage titles, descriptions, covers, and prices.",
+      description: "Manage titles, descriptions, covers, and categories.",
       icon: Gamepad2,
       to: "/admin/games",
     },

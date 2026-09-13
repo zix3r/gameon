@@ -209,7 +209,6 @@ test("Core application flows", async (t) => {
             categoryId: category.id,
             title: "Test Portal",
             description: "Puzzles",
-            price: "12.34",
             platform: "PC",
           },
           adminToken,
@@ -246,9 +245,14 @@ test("Core application flows", async (t) => {
         );
         assert.equal(games.total, 1);
         assert.equal(games.items[0]?.id, game.id);
+        assert.equal(Object.hasOwn(game, "price"), false);
+        assert.equal(Object.hasOwn(games.items[0]!, "price"), false);
         assert.equal(
-          (await request<GameView>("GET", `/games/${game.id}`, 200)).price,
-          "12.34",
+          Object.hasOwn(
+            await request<GameView>("GET", `/games/${game.id}`, 200),
+            "price",
+          ),
+          false,
         );
         await request(
           "PATCH",
@@ -261,7 +265,7 @@ test("Core application flows", async (t) => {
           "PATCH",
           `/games/${game.id}`,
           400,
-          { price: "-1" },
+          { price: "12.34" },
           adminToken,
         );
         await request(
@@ -356,12 +360,7 @@ test("Core application flows", async (t) => {
       ]) {
         await request("PATCH", reviewPath, 400, body, owner.accessToken);
       }
-      for (const body of [
-        {},
-        { price: null },
-        { title: null },
-        { price: "100000000.00" },
-      ]) {
+      for (const body of [{}, { title: null }, { platform: null }]) {
         await request("PATCH", `/games/${game.id}`, 400, body, adminToken);
       }
       await request("PATCH", `/categories/${category.id}`, 400, {}, adminToken);

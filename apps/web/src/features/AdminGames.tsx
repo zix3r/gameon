@@ -5,7 +5,6 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { api, errorMessage } from "../lib/api";
 import {
   invalidateCatalogue,
-  money,
   pageNumber,
   useCategories,
   useGames,
@@ -58,7 +57,6 @@ export function GameEditor({
         categoryId,
         title: value("title"),
         description: value("description"),
-        price: Number(value("price")).toFixed(2),
         platform: value("platform"),
         imageUrl: value("imageUrl") || null,
       });
@@ -95,40 +93,26 @@ export function GameEditor({
             defaultValue={game?.title}
           />
         </label>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label>
-            Category
-            <select
-              required
-              value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
-              disabled={categories.isPending || categories.isError}
-            >
-              <option value="" disabled>
-                {categories.isPending
-                  ? "Loading categories…"
-                  : "Choose a category"}
+        <label>
+          Category
+          <select
+            required
+            value={categoryId}
+            onChange={(event) => setCategoryId(event.target.value)}
+            disabled={categories.isPending || categories.isError}
+          >
+            <option value="" disabled>
+              {categories.isPending
+                ? "Loading categories…"
+                : "Choose a category"}
+            </option>
+            {categories.data?.map((category) => (
+              <option value={category.id} key={category.id}>
+                {category.name}
               </option>
-              {categories.data?.map((category) => (
-                <option value={category.id} key={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Price (EUR)
-            <input
-              type="number"
-              name="price"
-              required
-              min="0"
-              max="99999999.99"
-              step="0.01"
-              defaultValue={game?.price ?? "0.00"}
-            />
-          </label>
-        </div>
+            ))}
+          </select>
+        </label>
         <label>
           Platforms
           <input
@@ -214,7 +198,7 @@ export function AdminGames() {
       <PageHeading
         title="Games"
         eyebrow="Administration"
-        description="Manage game details, covers, categories, and reference prices."
+        description="Manage game details, covers, and categories."
       >
         <button className="button" onClick={() => setEditor({})}>
           <Plus size={17} aria-hidden="true" />
@@ -245,7 +229,6 @@ export function AdminGames() {
                 <tr>
                   <th scope="col">Game</th>
                   <th scope="col">Category</th>
-                  <th scope="col">Price</th>
                   <th scope="col">Actions</th>
                 </tr>
               </thead>
@@ -275,9 +258,6 @@ export function AdminGames() {
                       {categories.data?.find(
                         (category) => category.id === game.categoryId,
                       )?.name ?? "—"}
-                    </td>
-                    <td className="font-semibold whitespace-nowrap">
-                      {money(game.price)}
                     </td>
                     <td>
                       <div className="flex gap-2">

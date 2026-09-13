@@ -146,7 +146,6 @@ async function demonstrate() {
       categoryId: category.id,
       title: name,
       description: "Temporary demonstration game",
-      price: "12.34",
       platform: "PC",
     },
     admin,
@@ -194,7 +193,7 @@ async function demonstrate() {
   assert.equal(updated.rating, 4);
 
   section("6. EXPECTED ERRORS");
-  await call("PATCH", `/games/${game.id}`, 400, { price: "-1" }, admin);
+  await call("PATCH", `/games/${game.id}`, 400, { title: "" }, admin);
   await call("GET", `/games/${randomUUID()}`, 404);
   await call("GET", "/categories?search=%00", 400);
   await call("GET", "/games?search=%00", 400);

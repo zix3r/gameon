@@ -106,7 +106,7 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
     const gameId = seedId("game:hades");
     await db.game.update({
       where: { id: gameId },
-      data: { title: "Edited title", price: "1.23" },
+      data: { title: "Edited title" },
     });
     const second = await runSeed(db, env, mockIgdb);
     assert.deepEqual(second.users, first.users);

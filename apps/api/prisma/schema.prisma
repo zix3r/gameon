@@ -27,7 +27,6 @@ model Game {
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   title       String   @db.VarChar(200)
   description String   @db.VarChar(10000)
-  price       Decimal  @db.Decimal(10, 2)
   platform    String   @db.VarChar(100)
   imageUrl    String?  @db.VarChar(2048)
   igdbId      Int?     @unique

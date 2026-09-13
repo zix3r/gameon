@@ -22,7 +22,7 @@ test("IGDB import fetches all curated games and builds HTTPS cover URLs", async 
         ),
     ),
   );
-  assert.equal(games[0]?.price, catalogue[0].price);
+  assert.equal(Object.hasOwn(games[0]!, "price"), false);
   assert.equal(requests.length, 2);
   assert.ok(!requests[0]!.url.includes(config.clientSecret));
   assert.equal(

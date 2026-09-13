@@ -9,7 +9,6 @@ export interface ImportedGame {
   imageUrl: string;
   platform: string;
   category: string;
-  price: string;
 }
 
 export interface IgdbConfig {

@@ -179,7 +179,7 @@ test("category, game and review CRUD through dialogs", async ({
       .getByRole("dialog")
       .getByRole("combobox", { name: "Category", exact: true })
       .selectOption({ label: name });
-    await page.getByRole("dialog").getByLabel("Price (EUR)").fill("12.34");
+    await expect(page.getByRole("dialog").getByLabel(/price/i)).toHaveCount(0);
     await page.getByRole("dialog").getByLabel("Platforms").fill("PC");
     await page
       .getByRole("dialog")

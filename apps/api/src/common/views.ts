@@ -21,8 +21,6 @@ export class GameView extends EditableView {
   @ApiProperty({ format: "uuid" }) categoryId!: string;
   @ApiProperty() title!: string;
   @ApiProperty() description!: string;
-  @ApiProperty({ example: "19.99", description: "EUR decimal string" })
-  price!: string;
   @ApiProperty() platform!: string;
   @ApiProperty({ type: Number, nullable: true, minimum: 1, maximum: 5 })
   averageRating!: number | null;

@@ -164,7 +164,6 @@ test("every documented operation/status pair has an executable response contract
       categoryId: category.id,
       title: "Contract game",
       description: "A game for API verification",
-      price: "19.99",
       platform: "PC",
     };
     const game = await send<GameView>("POST", "/games", 201, {
@@ -444,9 +443,7 @@ test("every documented operation/status pair has an executable response contract
         ])
           await send("PATCH", rp, 400, { token: ownerToken, body });
         for (const body of [
-          { price: null },
-          { price: "-1" },
-          { price: "100000000.00" },
+          { price: "19.99" },
           { title: null },
           { title: "x".repeat(201) },
         ])

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router";
 import { ArrowRight, Gamepad2, Search } from "lucide-react";
 import { api } from "../lib/api";
-import { money, pageNumber, useCategories, useGames } from "../lib/queries";
+import { pageNumber, useCategories, useGames } from "../lib/queries";
 import { type Category, type Game } from "../lib/types";
 import {
   BackLink,
@@ -35,9 +35,8 @@ export function GameGrid({ games }: { games: Game[] }) {
                 {game.platform}
               </span>
               <h3 className="mt-1 mb-4 text-sm sm:text-base">{game.title}</h3>
-              <div className="mt-auto flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
+              <div className="mt-auto">
                 <Rating value={game.averageRating} count={game.reviewCount} />
-                <strong className="text-sm">{money(game.price)}</strong>
               </div>
             </div>
           </Link>

@@ -5,7 +5,6 @@ import {
   IsUrl,
   IsUUID,
   Length,
-  Matches,
   MaxLength,
 } from "class-validator";
 import { Trim } from "../common/input";
@@ -27,15 +26,6 @@ export class CreateGameDto {
   @IsString()
   @Length(1, 10000)
   description!: string;
-
-  @ApiProperty({
-    example: "19.99",
-    description:
-      "Nonnegative EUR decimal string, at most 8 integer digits and 2 decimal places",
-  })
-  @IsString()
-  @Matches(/^(0|[1-9]\d{0,7})(\.\d{1,2})?$/)
-  price!: string;
 
   @ApiProperty({ example: "PC", maxLength: 100 })
   @Trim()

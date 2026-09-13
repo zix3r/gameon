@@ -121,10 +121,6 @@ export function pageNumber(value: string | null) {
     : 1;
 }
 
-export const money = (value: string, currency = "EUR") =>
-  new Intl.NumberFormat("en-IE", { style: "currency", currency }).format(
-    Number(value),
-  );
 export const date = (value: string) =>
   new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(
     new Date(value),

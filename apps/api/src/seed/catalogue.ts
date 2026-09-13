@@ -27,18 +27,18 @@ export const categories = [
 ] as const;
 
 export const catalogue = [
-  { slug: "hades", category: "Action", price: "24.99" },
-  { slug: "hollow-knight", category: "Action", price: "14.99" },
-  { slug: "celeste", category: "Action", price: "19.99" },
-  { slug: "dead-cells", category: "Action", price: "24.99" },
-  { slug: "baldurs-gate-iii", category: "Role-playing", price: "59.99" },
-  { slug: "the-witcher-3-wild-hunt", category: "Role-playing", price: "29.99" },
-  { slug: "sid-meiers-civilization-vi", category: "Strategy", price: "39.99" },
-  { slug: "into-the-breach", category: "Strategy", price: "14.99" },
-  { slug: "stardew-valley", category: "Simulation", price: "13.99" },
-  { slug: "euro-truck-simulator-2", category: "Simulation", price: "19.99" },
-  { slug: "factorio", category: "Simulation", price: "32.00" },
-  { slug: "portal-2", category: "Puzzle", price: "9.99" },
+  { slug: "hades", category: "Action" },
+  { slug: "hollow-knight", category: "Action" },
+  { slug: "celeste", category: "Action" },
+  { slug: "dead-cells", category: "Action" },
+  { slug: "baldurs-gate-iii", category: "Role-playing" },
+  { slug: "the-witcher-3-wild-hunt", category: "Role-playing" },
+  { slug: "sid-meiers-civilization-vi", category: "Strategy" },
+  { slug: "into-the-breach", category: "Strategy" },
+  { slug: "stardew-valley", category: "Simulation" },
+  { slug: "euro-truck-simulator-2", category: "Simulation" },
+  { slug: "factorio", category: "Simulation" },
+  { slug: "portal-2", category: "Puzzle" },
 ] as const;
 
 export const demoUsers = [

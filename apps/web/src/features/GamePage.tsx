@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router";
 import { Monitor } from "lucide-react";
-import { money, useCategories, useGame } from "../lib/queries";
+import { useCategories, useGame } from "../lib/queries";
 import {
   BackLink,
   ErrorState,
@@ -55,14 +55,6 @@ export function GamePage() {
           <p className="leading-loose whitespace-pre-line wrap-break-word text-slate-300">
             {game.data.description}
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-5 border-t border-line pt-6">
-            <strong className="text-3xl tracking-tight">
-              {money(game.data.price)}
-            </strong>
-            <span className="text-xs text-muted">
-              Reference price. Explore player reviews below.
-            </span>
-          </div>
         </div>
       </div>
       <ReviewSection

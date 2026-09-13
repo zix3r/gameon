@@ -38,7 +38,6 @@ export interface Game {
   categoryId: string;
   title: string;
   description: string;
-  price: string;
   platform: string;
   imageUrl: string | null;
   averageRating: number | null;
@@ -66,7 +65,6 @@ export interface GameInput {
   categoryId: string;
   title: string;
   description: string;
-  price: string;
   platform: string;
   imageUrl: string | null;
 }

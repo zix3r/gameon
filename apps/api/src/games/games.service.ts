@@ -19,7 +19,6 @@ export class GamesService {
     const byGame = new Map(ratings.map((rating) => [rating.gameId, rating]));
     return games.map((game) => ({
       ...game,
-      price: game.price.toFixed(2),
       averageRating: byGame.get(game.id)?._avg.rating ?? null,
       reviewCount: byGame.get(game.id)?._count._all ?? 0,
       _links: gameLinks(game.id, game.categoryId),
