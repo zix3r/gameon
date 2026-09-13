@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 
 const base = "http://localhost:3000/api";
 const db = new PrismaClient();
 const started = performance.now();
-const name = `Smoke ${randomUUID()}`;
-const email = `smoke-${randomUUID()}@gameon.test`;
+const run = `${Date.now()}-${process.pid}`;
+const name = `Smoke test ${run}`;
+const email = `smoke-${run}@gameon.test`;
 const admin = {};
 const player = {};
 const covered = new Set();
