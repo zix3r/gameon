@@ -4,7 +4,6 @@ import {
   type Page,
   type APIRequestContext,
 } from "@playwright/test";
-import { randomUUID } from "node:crypto";
 
 async function login(page: Page, email: string) {
   await page.goto("/login");
@@ -140,7 +139,7 @@ test("category, game and review CRUD through dialogs", async ({
   page,
   request,
 }) => {
-  const name = `Browser ${randomUUID()}`;
+  const name = `Browser test ${Date.now()}-${process.pid}`;
   try {
     await login(page, "admin@gameon.test");
     await page.goto("/admin/categories");

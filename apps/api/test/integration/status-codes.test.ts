@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
 import { test } from "node:test";
 import { NestFactory } from "@nestjs/core";
 import { ThrottlerStorage } from "@nestjs/throttler";
@@ -25,7 +24,7 @@ test("every documented operation/status pair has an executable response contract
   const specification = configureApp(app);
   const db = app.get(DatabaseService);
   const covered = new Set<string>();
-  const suffix = randomUUID();
+  const suffix = `${Date.now()}-${process.pid}`;
   const email = `status-${suffix}@example.test`;
   const password = "Demo1234";
   const adminEmail = `admin-${email}`;

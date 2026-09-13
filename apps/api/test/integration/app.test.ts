@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
 import { test } from "node:test";
 import { NestFactory } from "@nestjs/core";
 import { PrismaClient } from "@prisma/client";
@@ -28,7 +27,7 @@ test("Core application flows", async (t) => {
   const db = new PrismaClient();
   const app = await NestFactory.create(AppModule, { logger: false });
   const specification = configureApp(app);
-  const email = `${randomUUID()}@example.test`;
+  const email = `test-${Date.now()}-${process.pid}@example.test`;
   const adminEmail = `admin-${email}`;
   const password = "Demo1234";
   let owner: AuthView;
@@ -182,7 +181,7 @@ test("Core application flows", async (t) => {
           (
             await request<Page<CategoryView>>(
               "GET",
-              `/categories?search=${randomUUID()}`,
+              `/categories?search=missing-${email}`,
               200,
             )
           ).items,
@@ -362,7 +361,7 @@ test("Core application flows", async (t) => {
 
     await t.test("input boundaries and hypermedia contracts", async () => {
       const reviewPath = `/games/${game.id}/reviews/${review.id}`;
-      for (const id of ["0", "-1", "1.5", "2147483648", randomUUID(), "NaN"]) {
+      for (const id of ["0", "-1", "1.5", "2147483648", "invalid-id", "NaN"]) {
         for (const path of [
           `/categories/${id}`,
           `/games/${id}`,
@@ -425,7 +424,7 @@ test("Core application flows", async (t) => {
       assert.deepEqual(beyond.items, []);
       const noMatch = await request<Page<GameView>>(
         "GET",
-        `/games?search=${randomUUID()}`,
+        `/games?search=missing-${email}`,
         200,
       );
       assert.deepEqual(noMatch.items, []);

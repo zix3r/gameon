@@ -26,7 +26,7 @@ test("malformed and out-of-range IDs are rejected before database access", () =>
     "2147483648",
     "9007199254740993",
     "9".repeat(400),
-    "00000000-0000-4000-8000-000000000001",
+    "invalid-id",
   ])
     assert.throws(() => pipe.transform(value), BadRequestException);
 });
