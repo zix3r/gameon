@@ -8,7 +8,7 @@ import {
   UpdateCategoryDto,
 } from "./categories.dto";
 
-function categoryView<T extends { id: string }>(category: T) {
+function categoryView<T extends { id: number }>(category: T) {
   return { ...category, _links: categoryLinks(category.id) };
 }
 
@@ -31,7 +31,7 @@ export class CategoriesService {
     return pageResult(items.map(categoryView), total, query, "/categories");
   }
 
-  async get(id: string) {
+  async get(id: number) {
     return categoryView(
       await this.db.category.findUniqueOrThrow({ where: { id } }),
     );
@@ -39,10 +39,10 @@ export class CategoriesService {
   async create(data: CreateCategoryDto) {
     return categoryView(await this.db.category.create({ data }));
   }
-  async update(id: string, data: UpdateCategoryDto) {
+  async update(id: number, data: UpdateCategoryDto) {
     return categoryView(await this.db.category.update({ where: { id }, data }));
   }
-  async delete(id: string) {
+  async delete(id: number) {
     await this.db.category.delete({ where: { id } });
   }
 }

@@ -108,6 +108,12 @@ test("Core application flows", async (t) => {
         displayName: "Other",
       });
       assert.equal(owner.user.role, "USER");
+      assert.ok(Number.isInteger(owner.user.id) && owner.user.id > 0);
+      const claims = JSON.parse(
+        Buffer.from(owner.accessToken.split(".")[1]!, "base64url").toString(),
+      );
+      assert.equal(claims.sub, String(owner.user.id));
+      assert.ok(Number.isInteger(claims.sid) && claims.sid > 0);
       await request("POST", "/auth/login", 401, {
         email,
         password: "WrongPassword",
@@ -225,12 +231,12 @@ test("Core application flows", async (t) => {
         );
         await request(
           "GET",
-          `/categories/${randomUUID()}/games/${game.id}/reviews`,
+          `/categories/2147483647/games/${game.id}/reviews`,
           404,
         );
         await request(
           "GET",
-          `/categories/${category.id}/games/${randomUUID()}/reviews`,
+          `/categories/${category.id}/games/2147483647/reviews`,
           404,
         );
         await request(
@@ -245,6 +251,9 @@ test("Core application flows", async (t) => {
         );
         assert.equal(games.total, 1);
         assert.equal(games.items[0]?.id, game.id);
+        assert.ok(Number.isInteger(category.id) && category.id > 0);
+        assert.ok(Number.isInteger(game.id) && game.id > 0);
+        assert.equal(game.categoryId, category.id);
         assert.equal(Object.hasOwn(game, "price"), false);
         assert.equal(Object.hasOwn(games.items[0]!, "price"), false);
         assert.equal(
@@ -276,7 +285,7 @@ test("Core application flows", async (t) => {
           adminToken,
         );
         await request("GET", "/games?page=0", 400);
-        await request("GET", `/games/${randomUUID()}`, 404);
+        await request("GET", "/games/2147483647", 404);
       },
     );
 
@@ -295,6 +304,9 @@ test("Core application flows", async (t) => {
         { text: "Duplicate", rating: 4 },
         owner.accessToken,
       );
+      assert.ok(Number.isInteger(review.id) && review.id > 0);
+      assert.equal(review.gameId, game.id);
+      assert.equal(review.authorId, owner.user.id);
       const path = `/games/${game.id}/reviews/${review.id}`;
       assert.equal(
         (await request<ReviewView>("GET", path, 200)).authorId,
@@ -345,11 +357,44 @@ test("Core application flows", async (t) => {
       const rated = await request<GameView>("GET", `/games/${game.id}`, 200);
       assert.equal(rated.averageRating, 4);
       assert.equal(rated.reviewCount, 1);
-      await request("GET", `/games/${randomUUID()}/reviews/${review.id}`, 404);
+      await request("GET", `/games/2147483647/reviews/${review.id}`, 404);
     });
 
     await t.test("input boundaries and hypermedia contracts", async () => {
       const reviewPath = `/games/${game.id}/reviews/${review.id}`;
+      for (const id of ["0", "-1", "1.5", "2147483648", randomUUID(), "NaN"]) {
+        for (const path of [
+          `/categories/${id}`,
+          `/games/${id}`,
+          `/games/${game.id}/reviews/${id}`,
+          `/categories/${id}/games/${game.id}/reviews`,
+          `/categories/${category.id}/games/${id}/reviews`,
+          `/games?categoryId=${id}`,
+          `/games/${game.id}/reviews?authorId=${id}`,
+        ])
+          await request("GET", path, 400);
+      }
+      for (const categoryId of [0, -1, 1.5, 2147483648, "1", true, null]) {
+        await request(
+          "PATCH",
+          `/games/${game.id}`,
+          400,
+          { categoryId },
+          adminToken,
+        );
+        await request(
+          "POST",
+          "/games",
+          400,
+          {
+            categoryId,
+            title: "Invalid parent",
+            description: "Invalid ID",
+            platform: "PC",
+          },
+          adminToken,
+        );
+      }
       for (const body of [
         {},
         { rating: null },

@@ -23,7 +23,7 @@ export function ReviewEditor({
   review,
   onClose,
 }: {
-  gameId: string;
+  gameId: number;
   review?: Review;
   onClose: () => void;
 }) {
@@ -261,7 +261,7 @@ export function ReviewSection({
   gameId,
   reviewsHref,
 }: {
-  gameId: string;
+  gameId: number;
   reviewsHref: string;
 }) {
   const auth = useAuth();
@@ -375,7 +375,9 @@ export function ReviewSection({
 }
 
 export function ReviewPage() {
-  const { gameId = "", reviewId = "" } = useParams();
+  const params = useParams();
+  const gameId = Number(params.gameId);
+  const reviewId = Number(params.reviewId);
   const navigate = useNavigate();
   const game = useGame(gameId);
   const review = useQuery({

@@ -2,20 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { scryptSync } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
-import {
-  categories,
-  catalogue,
-  demoReviews,
-  demoUsers,
-} from "../../src/seed/catalogue";
+import { categories, demoReviews, demoUsers } from "../../src/seed/catalogue";
 import { fetchGames } from "../../src/seed/igdb";
-import {
-  demoPassword,
-  persistSeed,
-  runSeed,
-  seedId,
-} from "../../src/seed/seed";
-import { mockIgdb } from "../fixtures/igdb";
+import { demoPassword, persistSeed, runSeed } from "../../src/seed/seed";
+import { igdbFixture, mockIgdb } from "../fixtures/igdb";
 
 const env = {
   NODE_ENV: "development",
@@ -29,24 +19,24 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
     /^\/gameon_test_[a-f0-9]{12}$/,
   );
   const db = new PrismaClient();
-  const userIds = demoUsers.map((user) => seedId(`user:${user.email}`));
-  const gameIds = catalogue.map((game) => seedId(`game:${game.slug}`));
-  const categoryIds = categories.map((category) =>
-    seedId(`category:${category.name}`),
-  );
+  const users = { email: { in: demoUsers.map((user) => user.email) } };
+  const games = { igdbId: { in: igdbFixture().map((game) => game.id) } };
+  const categoryNames = {
+    name: { in: categories.map((category) => category.name) },
+  };
   async function counts() {
     return Promise.all([
-      db.category.count({ where: { id: { in: categoryIds } } }),
-      db.game.count({ where: { id: { in: gameIds } } }),
-      db.user.count({ where: { id: { in: userIds } } }),
-      db.review.count({ where: { authorId: { in: userIds } } }),
+      db.category.count({ where: categoryNames }),
+      db.game.count({ where: games }),
+      db.user.count({ where: users }),
+      db.review.count({ where: { author: users } }),
     ]);
   }
   async function clear() {
-    await db.review.deleteMany({ where: { authorId: { in: userIds } } });
-    await db.game.deleteMany({ where: { id: { in: gameIds } } });
-    await db.user.deleteMany({ where: { id: { in: userIds } } });
-    await db.category.deleteMany({ where: { id: { in: categoryIds } } });
+    await db.review.deleteMany({ where: { author: users } });
+    await db.game.deleteMany({ where: games });
+    await db.user.deleteMany({ where: users });
+    await db.category.deleteMany({ where: categoryNames });
   }
   try {
     assert.deepEqual(await counts(), [0, 0, 0, 0]);
@@ -75,8 +65,11 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
     const first = await runSeed(db, env, mockIgdb);
     assert.equal(first.games, 12);
     assert.deepEqual(await counts(), [6, 12, 3, demoReviews.length]);
-    const playerId = seedId("user:demo@gameon.test");
-    const player = await db.user.findUniqueOrThrow({ where: { id: playerId } });
+    const player = await db.user.findUniqueOrThrow({
+      where: { email: "demo@gameon.test" },
+    });
+    const playerId = player.id;
+    assert.ok(Number.isInteger(playerId) && playerId > 0);
     assert.equal(player.displayName, "Demo");
     assert.notEqual(player.passwordHash, demoPassword);
     const [algorithm, cost, r, p, salt, key] = player.passwordHash.split("$");
@@ -91,19 +84,32 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
       key,
     );
     assert.equal(
-      await db.game.count({ where: { id: { in: gameIds }, imageUrl: null } }),
+      await db.game.count({ where: { ...games, imageUrl: null } }),
       0,
     );
     assert.equal(
-      await db.game.count({ where: { categoryId: seedId("category:Racing") } }),
+      await db.game.count({ where: { category: { name: "Racing" } } }),
       0,
     );
     assert.equal(
-      await db.review.count({ where: { gameId: seedId("game:factorio") } }),
+      await db.review.count({
+        where: {
+          game: {
+            igdbId: igdbFixture().find((game) => game.slug === "factorio")!.id,
+          },
+        },
+      }),
       0,
     );
 
-    const gameId = seedId("game:hades");
+    const gameId = (
+      await db.game.findUniqueOrThrow({
+        where: {
+          igdbId: igdbFixture().find((game) => game.slug === "hades")!.id,
+        },
+      })
+    ).id;
+    assert.ok(Number.isInteger(gameId) && gameId > 0);
     await db.game.update({
       where: { id: gameId },
       data: { title: "Edited title" },
@@ -125,7 +131,7 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
     await runSeed(db, { ...env, NODE_ENV: "production" }, mockIgdb);
     assert.deepEqual(await counts(), [6, 12, 3, demoReviews.length]);
     const productionHash = (
-      await db.user.findUniqueOrThrow({ where: { id: playerId } })
+      await db.user.findUniqueOrThrow({ where: { email: "demo@gameon.test" } })
     ).passwordHash.split("$");
     assert.equal(
       scryptSync(demoPassword, productionHash[4]!, 64, {

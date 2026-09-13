@@ -2,8 +2,7 @@ import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Prisma, Role } from "@prisma/client";
 import { link } from "../common/links";
-import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { isUUID } from "class-validator";
+import { createHash, randomBytes } from "node:crypto";
 import { DatabaseService } from "../database/database.service";
 import {
   ACCESS_SECONDS,
@@ -28,7 +27,7 @@ const userSelect = {
 interface AccessClaims {
   sub: string;
   role: Role;
-  sid: string;
+  sid: number;
   exp: number;
   iat: number;
 }
@@ -46,7 +45,7 @@ export class AuthService {
 
   private async tokenResponse(
     user: Omit<UserView, "_links">,
-    sessionId: string,
+    sessionId: number,
     refreshToken: string,
     expiresAt: Date,
   ) {
@@ -55,7 +54,7 @@ export class AuthService {
       {
         secret: this.settings.secret,
         algorithm: "HS256",
-        subject: user.id,
+        subject: String(user.id),
         issuer: "gameon",
         audience: "gameon-web",
         expiresIn: ACCESS_SECONDS,
@@ -78,17 +77,15 @@ export class AuthService {
     user: Omit<UserView, "_links">,
   ) {
     const refreshToken = randomBytes(32).toString("base64url");
-    const familyId = randomUUID();
     const expiresAt = new Date(Date.now() + REFRESH_MS);
-    await tx.refreshSession.create({
+    const session = await tx.refreshSession.create({
       data: {
         userId: user.id,
-        familyId,
         tokenHash: refreshHash(refreshToken),
         expiresAt,
       },
     });
-    return this.tokenResponse(user, familyId, refreshToken, expiresAt);
+    return this.tokenResponse(user, session.familyId, refreshToken, expiresAt);
   }
 
   async register(dto: RegisterDto) {
@@ -202,8 +199,13 @@ export class AuthService {
         maxAge: ACCESS_SECONDS,
       });
       if (
-        !isUUID(claims.sub) ||
-        !isUUID(claims.sid) ||
+        typeof claims.sub !== "string" ||
+        !/^[1-9]\d*$/.test(claims.sub) ||
+        !Number.isInteger(Number(claims.sub)) ||
+        Number(claims.sub) > 2147483647 ||
+        !Number.isInteger(claims.sid) ||
+        claims.sid < 1 ||
+        claims.sid > 2147483647 ||
         !Object.values(Role).includes(claims.role) ||
         !Number.isFinite(claims.exp) ||
         !Number.isFinite(claims.iat) ||
@@ -216,7 +218,7 @@ export class AuthService {
     const session = await this.db.refreshSession.findFirst({
       where: {
         familyId: claims.sid,
-        userId: claims.sub,
+        userId: Number(claims.sub),
         usedAt: null,
         revokedAt: null,
         expiresAt: { gt: new Date() },

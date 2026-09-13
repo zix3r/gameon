@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -20,6 +19,7 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
+import { ParseIdPipe } from "../common/id.pipe";
 import { ApiPage } from "../common/pagination.dto";
 import { NonEmptyBodyPipe } from "../common/input";
 import { CategoryView } from "../common/views";
@@ -50,7 +50,7 @@ export class CategoriesController {
   @ApiOperation({ summary: "Get a category" })
   @ApiOkResponse({ type: CategoryView })
   @ApiNotFoundResponse()
-  get(@Param("id", ParseUUIDPipe) id: string) {
+  get(@Param("id", ParseIdPipe) id: number) {
     return this.categories.get(id);
   }
 
@@ -70,7 +70,7 @@ export class CategoriesController {
   @ApiNotFoundResponse()
   @ApiConflictResponse()
   update(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", ParseIdPipe) id: number,
     @Body(NonEmptyBodyPipe) dto: UpdateCategoryDto,
   ) {
     return this.categories.update(id, dto);
@@ -83,7 +83,7 @@ export class CategoriesController {
   @ApiNoContentResponse()
   @ApiNotFoundResponse()
   @ApiConflictResponse({ description: "Category still contains games" })
-  delete(@Param("id", ParseUUIDPipe) id: string) {
+  delete(@Param("id", ParseIdPipe) id: number) {
     return this.categories.delete(id);
   }
 }

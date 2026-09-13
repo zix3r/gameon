@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { ApiError, SessionClient, apiUrl, withQuery } from "./api";
 
 const user = {
-  id: "user-1",
+  id: 1,
   email: "demo@gameon.test",
   displayName: "Demo",
   role: "USER",
@@ -30,9 +30,9 @@ test("API links are followed without duplicating the prefix", async () => {
     "/api/games?page=2&pageSize=10&search=Action%20%26%20RPG",
   );
   expect(apiUrl("/games")).toBe("/api/games");
-  expect(
-    withQuery("/api/games?categoryId=cat", { page: 2, search: "A&B" }),
-  ).toBe("/api/games?categoryId=cat&page=2&search=A%26B");
+  expect(withQuery("/api/games?categoryId=1", { page: 2, search: "A&B" })).toBe(
+    "/api/games?categoryId=1&page=2&search=A%26B",
+  );
 });
 
 test("untrusted and escaping links are rejected before credentials can be sent", async () => {

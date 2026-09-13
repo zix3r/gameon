@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -21,6 +20,7 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
+import { ParseIdPipe } from "../common/id.pipe";
 import { ApiPage } from "../common/pagination.dto";
 import { NonEmptyBodyPipe } from "../common/input";
 import { ReviewView } from "../common/views";
@@ -45,7 +45,7 @@ export class ReviewsController {
   @ApiOperation({ summary: "List reviews belonging to a game" })
   @ApiPage(ReviewView)
   list(
-    @Param("gameId", ParseUUIDPipe) gameId: string,
+    @Param("gameId", ParseIdPipe) gameId: number,
     @Query() query: ReviewsQueryDto,
   ) {
     return this.reviews.list(gameId, query);
@@ -56,8 +56,8 @@ export class ReviewsController {
   @ApiOperation({ summary: "Get a review belonging to a game" })
   @ApiOkResponse({ type: ReviewView })
   get(
-    @Param("gameId", ParseUUIDPipe) gameId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("gameId", ParseIdPipe) gameId: number,
+    @Param("id", ParseIdPipe) id: number,
   ) {
     return this.reviews.get(gameId, id);
   }
@@ -68,7 +68,7 @@ export class ReviewsController {
   @ApiCreatedResponse({ type: ReviewView })
   @ApiConflictResponse({ description: "Author already reviewed this game" })
   create(
-    @Param("gameId", ParseUUIDPipe) gameId: string,
+    @Param("gameId", ParseIdPipe) gameId: number,
     @Body() dto: CreateReviewDto,
     @CurrentUser() user: CurrentIdentity,
   ) {
@@ -81,8 +81,8 @@ export class ReviewsController {
   @ApiOperation({ summary: "Update review text or rating" })
   @ApiOkResponse({ type: ReviewView })
   update(
-    @Param("gameId", ParseUUIDPipe) gameId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("gameId", ParseIdPipe) gameId: number,
+    @Param("id", ParseIdPipe) id: number,
     @Body(NonEmptyBodyPipe) dto: UpdateReviewDto,
     @CurrentUser() user: CurrentIdentity,
   ) {
@@ -98,8 +98,8 @@ export class ReviewsController {
   @ApiOperation({ summary: "Delete a game review" })
   @ApiNoContentResponse()
   delete(
-    @Param("gameId", ParseUUIDPipe) gameId: string,
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("gameId", ParseIdPipe) gameId: number,
+    @Param("id", ParseIdPipe) id: number,
     @CurrentUser() user: CurrentIdentity,
   ) {
     return this.reviews.delete(gameId, id, user);

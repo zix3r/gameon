@@ -1,21 +1,17 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
-import {
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Length,
-  Max,
-  Min,
-} from "class-validator";
+import { Type } from "class-transformer";
+import { IsInt, IsOptional, IsString, Length, Max, Min } from "class-validator";
 import { Trim } from "../common/input";
 import { PaginationDto } from "../common/pagination.dto";
 
 export class ReviewsQueryDto extends PaginationDto {
-  @ApiPropertyOptional({ format: "uuid" })
+  @ApiPropertyOptional({ type: "integer", minimum: 1, maximum: 2147483647 })
   @IsOptional()
-  @IsUUID()
-  authorId?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(2147483647)
+  authorId?: number;
 }
 
 export class CreateReviewDto {

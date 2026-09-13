@@ -69,11 +69,10 @@ export function useGames({
   return { ...result, followPage: navigation.followPage };
 }
 
-export function useGame(id: string) {
+export function useGame(id: number) {
   return useQuery({
     queryKey: ["game", id],
     queryFn: ({ signal }) => api<Game>(`/games/${id}`, { signal }),
-    enabled: !!id,
   });
 }
 
@@ -105,7 +104,7 @@ export async function invalidateCatalogue(client: QueryClient) {
   );
 }
 
-export async function invalidateReviews(client: QueryClient, gameId: string) {
+export async function invalidateReviews(client: QueryClient, gameId: number) {
   await Promise.all([
     client.invalidateQueries({ queryKey: ["reviews", gameId] }),
     client.invalidateQueries({ queryKey: ["review", gameId] }),

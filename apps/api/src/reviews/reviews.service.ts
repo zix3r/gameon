@@ -12,7 +12,7 @@ import {
 
 const author = { select: { id: true, displayName: true } } as const;
 
-function reviewView<T extends { id: string; gameId: string }>(review: T) {
+function reviewView<T extends { id: number; gameId: number }>(review: T) {
   return { ...review, _links: reviewLinks(review.id, review.gameId) };
 }
 
@@ -20,7 +20,7 @@ function reviewView<T extends { id: string; gameId: string }>(review: T) {
 export class ReviewsService {
   constructor(private readonly db: DatabaseService) {}
 
-  async list(gameId: string, query: ReviewsQueryDto, categoryId?: string) {
+  async list(gameId: number, query: ReviewsQueryDto, categoryId?: number) {
     await this.db.game.findUniqueOrThrow({ where: { id: gameId, categoryId } });
     const [items, total] = await this.db.$transaction([
       this.db.review.findMany({
@@ -40,7 +40,7 @@ export class ReviewsService {
     });
   }
 
-  async get(gameId: string, id: string) {
+  async get(gameId: number, id: number) {
     return reviewView(
       await this.db.review.findUniqueOrThrow({
         where: { id, gameId },
@@ -49,7 +49,7 @@ export class ReviewsService {
     );
   }
 
-  async create(gameId: string, data: CreateReviewDto, authorId: string) {
+  async create(gameId: number, data: CreateReviewDto, authorId: number) {
     await this.db.game.findUniqueOrThrow({ where: { id: gameId } });
     return reviewView(
       await this.db.review.create({
@@ -60,8 +60,8 @@ export class ReviewsService {
   }
 
   async update(
-    gameId: string,
-    id: string,
+    gameId: number,
+    id: number,
     data: UpdateReviewDto,
     user: CurrentIdentity,
   ) {
@@ -77,7 +77,7 @@ export class ReviewsService {
     );
   }
 
-  async delete(gameId: string, id: string, user: CurrentIdentity) {
+  async delete(gameId: number, id: number, user: CurrentIdentity) {
     const review = await this.get(gameId, id);
     if (review.authorId !== user.id && user.role !== Role.ADMIN)
       throw new ForbiddenException(

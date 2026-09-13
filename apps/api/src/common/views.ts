@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { CategoryLinksView, GameLinksView, GameChildLinksView } from "./links";
 
 export class RecordView {
-  @ApiProperty({ format: "uuid" }) id!: string;
+  @ApiProperty({ type: "integer", minimum: 1 }) id!: number;
   @ApiProperty({ format: "date-time" }) createdAt!: string;
 }
 
@@ -18,7 +18,7 @@ export class CategoryView extends EditableView {
 
 export class GameView extends EditableView {
   @ApiProperty({ type: GameLinksView }) _links!: GameLinksView;
-  @ApiProperty({ format: "uuid" }) categoryId!: string;
+  @ApiProperty({ type: "integer", minimum: 1 }) categoryId!: number;
   @ApiProperty() title!: string;
   @ApiProperty() description!: string;
   @ApiProperty() platform!: string;
@@ -31,14 +31,14 @@ export class GameView extends EditableView {
 }
 
 export class AuthorView {
-  @ApiProperty({ format: "uuid" }) id!: string;
+  @ApiProperty({ type: "integer", minimum: 1 }) id!: number;
   @ApiProperty() displayName!: string;
 }
 
 export class ReviewView extends EditableView {
   @ApiProperty({ type: GameChildLinksView }) _links!: GameChildLinksView;
-  @ApiProperty({ format: "uuid" }) gameId!: string;
-  @ApiProperty({ format: "uuid" }) authorId!: string;
+  @ApiProperty({ type: "integer", minimum: 1 }) gameId!: number;
+  @ApiProperty({ type: "integer", minimum: 1 }) authorId!: number;
   @ApiProperty() text!: string;
   @ApiProperty({ minimum: 1, maximum: 5 }) rating!: number;
   @ApiProperty({ type: AuthorView }) author!: AuthorView;

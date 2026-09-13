@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -20,6 +19,7 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
+import { ParseIdPipe } from "../common/id.pipe";
 import { ApiPage } from "../common/pagination.dto";
 import { NonEmptyBodyPipe } from "../common/input";
 import { GameView } from "../common/views";
@@ -46,7 +46,7 @@ export class GamesController {
   @ApiOperation({ summary: "Get a game" })
   @ApiOkResponse({ type: GameView })
   @ApiNotFoundResponse()
-  get(@Param("id", ParseUUIDPipe) id: string) {
+  get(@Param("id", ParseIdPipe) id: number) {
     return this.games.get(id);
   }
 
@@ -71,7 +71,7 @@ export class GamesController {
     description: "Category changed during the request; retry",
   })
   update(
-    @Param("id", ParseUUIDPipe) id: string,
+    @Param("id", ParseIdPipe) id: number,
     @Body(NonEmptyBodyPipe) dto: UpdateGameDto,
   ) {
     return this.games.update(id, dto);
@@ -84,7 +84,7 @@ export class GamesController {
   @ApiNoContentResponse()
   @ApiNotFoundResponse()
   @ApiConflictResponse({ description: "Game still has reviews" })
-  delete(@Param("id", ParseUUIDPipe) id: string) {
+  delete(@Param("id", ParseIdPipe) id: number) {
     return this.games.delete(id);
   }
 }

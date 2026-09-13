@@ -1,4 +1,5 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
+import { ParseIdPipe } from "../common/id.pipe";
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
@@ -25,8 +26,8 @@ export class CategoryReviewsController {
   @ApiOperation({ summary: "List reviews scoped through a category and game" })
   @ApiPage(ReviewView)
   list(
-    @Param("categoryId", ParseUUIDPipe) categoryId: string,
-    @Param("gameId", ParseUUIDPipe) gameId: string,
+    @Param("categoryId", ParseIdPipe) categoryId: number,
+    @Param("gameId", ParseIdPipe) gameId: number,
     @Query() query: ReviewsQueryDto,
   ) {
     return this.reviews.list(gameId, query, categoryId);

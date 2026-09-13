@@ -29,7 +29,7 @@ test("every documented operation/status pair has an executable response contract
   const email = `status-${suffix}@example.test`;
   const password = "Demo1234";
   const adminEmail = `admin-${email}`;
-  const missing = randomUUID();
+  const missing = 2147483647;
   let cookie = "";
   let token = "";
   try {

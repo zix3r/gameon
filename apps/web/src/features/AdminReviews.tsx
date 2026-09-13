@@ -56,7 +56,7 @@ function GamePicker() {
             </div>
             <button
               className="button button-small button-ghost mt-auto"
-              onClick={() => setParams({ gameId: game.id })}
+              onClick={() => setParams({ gameId: String(game.id) })}
             >
               <MessageSquare size={15} aria-hidden="true" />
               Manage reviews
@@ -81,7 +81,7 @@ function GamePicker() {
   );
 }
 
-function GameReviews({ gameId }: { gameId: string }) {
+function GameReviews({ gameId }: { gameId: number }) {
   const [params, setParams] = useSearchParams();
   const page = pageNumber(params.get("page"));
   const game = useGame(gameId);
@@ -100,7 +100,7 @@ function GameReviews({ gameId }: { gameId: string }) {
       }),
   });
   function changePage(page: number) {
-    setParams({ gameId, page: String(page) });
+    setParams({ gameId: String(gameId), page: String(page) });
   }
   if (game.isPending) return <Loading />;
   if (game.isError)
@@ -164,7 +164,7 @@ export function AdminReviews() {
         eyebrow="Administration"
         description="Read player feedback and remove inappropriate reviews."
       />
-      {gameId ? <GameReviews gameId={gameId} /> : <GamePicker />}
+      {gameId ? <GameReviews gameId={Number(gameId)} /> : <GamePicker />}
     </>
   );
 }

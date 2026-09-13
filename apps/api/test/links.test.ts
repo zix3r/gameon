@@ -10,15 +10,12 @@ import {
 import { pageResult } from "../src/common/pagination.dto";
 
 test("resource links point to implemented routes", () => {
-  assert.equal(categoryLinks("cat").games.href, "/api/games?categoryId=cat");
+  assert.equal(categoryLinks(1).games.href, "/api/games?categoryId=1");
   assert.equal(
-    gameLinks("game", "cat").reviews.href,
-    "/api/categories/cat/games/game/reviews",
+    gameLinks(2, 1).reviews.href,
+    "/api/categories/1/games/2/reviews",
   );
-  assert.equal(
-    reviewLinks("review", "game").self.href,
-    "/api/games/game/reviews/review",
-  );
+  assert.equal(reviewLinks(3, 2).self.href, "/api/games/2/reviews/3");
 });
 
 test("pagination retains encoded filters and omits unavailable directions", () => {
@@ -26,7 +23,7 @@ test("pagination retains encoded filters and omits unavailable directions", () =
     page: 2,
     pageSize: 2,
     search: "Action & RPG?",
-    categoryId: "cat",
+    categoryId: 1,
   };
   const result = pageResult([], 7, query, "/games");
   for (const [rel, page] of [
@@ -38,7 +35,7 @@ test("pagination retains encoded filters and omits unavailable directions", () =
   ] as const) {
     const url = new URL(result._links[rel]!.href, "https://gameon.test");
     assert.equal(url.searchParams.get("search"), query.search);
-    assert.equal(url.searchParams.get("categoryId"), "cat");
+    assert.equal(url.searchParams.get("categoryId"), "1");
     assert.equal(url.searchParams.get("pageSize"), "2");
     assert.equal(url.searchParams.get("page"), String(page));
   }
@@ -66,14 +63,14 @@ test("nested pagination retains parent scope and author filter", () => {
   const result = pageResult(
     [],
     3,
-    { page: 1, pageSize: 1, ...{ authorId: "author" } },
-    "/categories/cat/games/game/reviews",
-    { game: link("/games/game"), category: link("/categories/cat") },
+    { page: 1, pageSize: 1, ...{ authorId: 4 } },
+    "/categories/1/games/2/reviews",
+    { game: link("/games/2"), category: link("/categories/1") },
   );
   assert.match(
     result._links.next!.href,
-    /^\/api\/categories\/cat\/games\/game\/reviews\?/,
+    /^\/api\/categories\/1\/games\/2\/reviews\?/,
   );
-  assert.match(result._links.next!.href, /authorId=author/);
-  assert.equal(result._links.game?.href, "/api/games/game");
+  assert.match(result._links.next!.href, /authorId=4/);
+  assert.equal(result._links.game?.href, "/api/games/2");
 });

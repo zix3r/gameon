@@ -38,14 +38,14 @@ export function link(path: string, query: object = {}): LinkView {
   return { href: `/api${path}${params.size ? `?${params}` : ""}` };
 }
 
-export function categoryLinks(id: string): CategoryLinksView {
+export function categoryLinks(id: number): CategoryLinksView {
   return {
     self: link(`/categories/${id}`),
     games: link("/games", { categoryId: id }),
   };
 }
 
-export function gameLinks(id: string, categoryId: string): GameLinksView {
+export function gameLinks(id: number, categoryId: number): GameLinksView {
   return {
     self: link(`/games/${id}`),
     category: link(`/categories/${categoryId}`),
@@ -53,7 +53,7 @@ export function gameLinks(id: string, categoryId: string): GameLinksView {
   };
 }
 
-export function reviewLinks(id: string, gameId: string): GameChildLinksView {
+export function reviewLinks(id: number, gameId: number): GameChildLinksView {
   return {
     self: link(`/games/${gameId}/reviews/${id}`),
     game: link(`/games/${gameId}`),

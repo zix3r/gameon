@@ -177,11 +177,7 @@ async function demonstrate() {
     200,
   );
   assert.equal(nested.items[0].id, review.id);
-  await call(
-    "GET",
-    `/categories/${randomUUID()}/games/${game.id}/reviews`,
-    404,
-  );
+  await call("GET", `/categories/2147483647/games/${game.id}/reviews`, 404);
   await call("GET", `/games/${game.id}/reviews/${review.id}`, 200);
   const updated = await call(
     "PATCH",
@@ -194,7 +190,7 @@ async function demonstrate() {
 
   section("6. EXPECTED ERRORS");
   await call("PATCH", `/games/${game.id}`, 400, { title: "" }, admin);
-  await call("GET", `/games/${randomUUID()}`, 404);
+  await call("GET", "/games/2147483647", 404);
   await call("GET", "/categories?search=%00", 400);
   await call("GET", "/games?search=%00", 400);
   await call("GET", "/auth/me", 401);

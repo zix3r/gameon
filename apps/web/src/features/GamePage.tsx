@@ -12,7 +12,7 @@ import {
 import { ReviewSection } from "./reviews";
 
 export function GamePage() {
-  const { gameId = "" } = useParams();
+  const gameId = Number(useParams().gameId);
   const game = useGame(gameId);
   const categories = useCategories();
   if (game.isPending) return <Loading label="Loading game…" />;

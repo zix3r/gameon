@@ -1,9 +1,12 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import {
   IsOptional,
   IsString,
   IsUrl,
-  IsUUID,
+  IsInt,
+  Min,
+  Max,
   Length,
   MaxLength,
 } from "class-validator";
@@ -11,9 +14,11 @@ import { Trim } from "../common/input";
 import { PaginationDto } from "../common/pagination.dto";
 
 export class CreateGameDto {
-  @ApiProperty({ format: "uuid" })
-  @IsUUID()
-  categoryId!: string;
+  @ApiProperty({ type: "integer", minimum: 1, maximum: 2147483647 })
+  @IsInt()
+  @Min(1)
+  @Max(2147483647)
+  categoryId!: number;
 
   @ApiProperty({ maxLength: 200 })
   @Trim()
@@ -49,10 +54,13 @@ export class UpdateGameDto extends PartialType(CreateGameDto, {
 }) {}
 
 export class GamesQueryDto extends PaginationDto {
-  @ApiPropertyOptional({ format: "uuid" })
+  @ApiPropertyOptional({ type: "integer", minimum: 1, maximum: 2147483647 })
   @IsOptional()
-  @IsUUID()
-  categoryId?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(2147483647)
+  categoryId?: number;
 
   @ApiPropertyOptional({ maxLength: 200 })
   @IsOptional()

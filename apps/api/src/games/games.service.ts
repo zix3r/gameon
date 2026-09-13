@@ -51,7 +51,7 @@ export class GamesService {
     );
   }
 
-  async get(id: string) {
+  async get(id: number) {
     return (
       await this.views([
         await this.db.game.findUniqueOrThrow({ where: { id } }),
@@ -66,7 +66,7 @@ export class GamesService {
     return (await this.views([await this.db.game.create({ data })]))[0]!;
   }
 
-  async update(id: string, data: UpdateGameDto) {
+  async update(id: number, data: UpdateGameDto) {
     if (data.categoryId)
       await this.db.category.findUniqueOrThrow({
         where: { id: data.categoryId },
@@ -76,7 +76,7 @@ export class GamesService {
     )[0]!;
   }
 
-  async delete(id: string) {
+  async delete(id: number) {
     await this.db.game.delete({ where: { id } });
   }
 }

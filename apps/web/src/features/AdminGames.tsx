@@ -34,7 +34,7 @@ export function GameEditor({
 }) {
   const categories = useCategories();
   const client = useQueryClient();
-  const [categoryId, setCategoryId] = useState(game?.categoryId ?? "");
+  const [categoryId, setCategoryId] = useState(String(game?.categoryId ?? ""));
   const mutation = useMutation({
     mutationFn: (body: GameInput) =>
       api<Game>(game?._links.self.href ?? "/games", {
@@ -54,7 +54,7 @@ export function GameEditor({
     const value = (key: string) => String(data.get(key) ?? "").trim();
     if (!mutation.isPending)
       mutation.mutate({
-        categoryId,
+        categoryId: Number(categoryId),
         title: value("title"),
         description: value("description"),
         platform: value("platform"),

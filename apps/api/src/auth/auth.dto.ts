@@ -35,7 +35,7 @@ export class RegisterDto extends LoginDto {
 
 export class UserView {
   @ApiProperty({ type: ResourceLinksView }) _links!: ResourceLinksView;
-  @ApiProperty({ format: "uuid" }) id!: string;
+  @ApiProperty({ type: "integer", minimum: 1 }) id!: number;
   @ApiProperty({ format: "email" }) email!: string;
   @ApiProperty() displayName!: string;
   @ApiProperty({ enum: Role }) role!: Role;
@@ -49,5 +49,5 @@ export class AuthView {
 }
 
 export interface CurrentIdentity extends Omit<UserView, "_links"> {
-  sessionId: string;
+  sessionId: number;
 }
