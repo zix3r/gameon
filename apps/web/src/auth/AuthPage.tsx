@@ -66,7 +66,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
           </li>
           <li>
             <ShieldCheck aria-hidden="true" />
-            Try ordering without real payments
+            Manage your own reviews securely
           </li>
         </ul>
       </section>
@@ -76,7 +76,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
           description={
             registering
               ? "Join the conversation. Your next game is waiting."
-              : "Sign in to review games and manage your demo orders."
+              : "Sign in to rate games and share your experience."
           }
         />
         <form onSubmit={submit} className="form-stack">

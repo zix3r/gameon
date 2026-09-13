@@ -34,7 +34,6 @@ model Game {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   reviews     Review[]
-  orders      Order[]
 
   @@index([categoryId, createdAt, id])
   @@index([createdAt, id])
@@ -49,7 +48,6 @@ model User {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   reviews         Review[]
-  orders          Order[]
   refreshSessions RefreshSession[]
 }
 
@@ -82,19 +80,4 @@ model Review {
 
   @@unique([gameId, authorId])
   @@index([gameId, createdAt, id])
-}
-
-model Order {
-  id                  String   @id @default(uuid()) @db.Uuid
-  userId              String   @db.Uuid
-  user                User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  gameId              String   @db.Uuid
-  game                Game     @relation(fields: [gameId], references: [id], onDelete: Restrict)
-  unitPriceAtPurchase Decimal  @db.Decimal(10, 2)
-  currency            String   @default("EUR") @db.VarChar(3)
-  createdAt           DateTime @default(now())
-
-  @@index([userId, createdAt, id])
-  @@index([gameId])
-  @@index([createdAt, id])
 }

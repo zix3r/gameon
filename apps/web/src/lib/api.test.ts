@@ -78,8 +78,8 @@ test("simultaneous protected requests share one refresh and retry with the new t
   const session = new SessionClient();
   await session.signIn("login", { email: user.email, password: "Demo1234" });
   await Promise.all([
-    session.api("/orders", { auth: true }),
-    session.api("/orders/one", { auth: true }),
+    session.api("/auth/me", { auth: true }),
+    session.api("/auth/me", { auth: true }),
   ]);
   expect(refreshes).toBe(1);
   expect(session.getSnapshot().status).toBe("authenticated");
@@ -154,7 +154,7 @@ test("expired refresh cookies become guest sessions without retry loops", async 
   const session = new SessionClient();
   await session.restore();
   expect(session.getSnapshot().status).toBe("guest");
-  await expect(session.api("/orders", { auth: true })).rejects.toMatchObject({
+  await expect(session.api("/auth/me", { auth: true })).rejects.toMatchObject({
     status: 401,
   });
   expect(fetcher).toHaveBeenCalledTimes(2);
@@ -200,7 +200,7 @@ test("a second unauthorized response clears the session without another retry", 
   );
   const session = new SessionClient();
   await session.signIn("login", { email: user.email, password: "Demo1234" });
-  await expect(session.api("/orders", { auth: true })).rejects.toMatchObject({
+  await expect(session.api("/auth/me", { auth: true })).rejects.toMatchObject({
     status: 401,
   });
   expect(refreshes).toBe(1);

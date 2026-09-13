@@ -71,28 +71,6 @@ export async function persistSeed(db: PrismaClient, games: ImportedGame[]) {
           },
         });
       }
-      for (const [email, slug] of [
-        ["matas@gameon.test", "hades"],
-        ["demo@gameon.test", "the-witcher-3-wild-hunt"],
-      ]) {
-        const userId = userIds.get(email!);
-        const gameId = gameIds.get(slug!);
-        if (!userId || !gameId)
-          throw new Error("Incomplete seed order references");
-        const game = await tx.game.findUniqueOrThrow({ where: { id: gameId } });
-        const id = seedId(`order:${email}:${slug}`);
-        await tx.order.upsert({
-          where: { id },
-          update: {},
-          create: {
-            id,
-            userId,
-            gameId,
-            unitPriceAtPurchase: game.price,
-            currency: "EUR",
-          },
-        });
-      }
       return {
         games: games.length,
         users: [...userIds].map(([email, id]) => ({ email, id })),

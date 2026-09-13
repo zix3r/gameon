@@ -1,6 +1,12 @@
-import { ValidationPipe, type INestApplication } from "@nestjs/common";
+import {
+  UnsupportedMediaTypeException,
+  ValidationPipe,
+  type INestApplication,
+} from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { PrismaExceptionFilter } from "./common/prisma.filter";
+import { ApiExceptionFilter } from "./common/api-exception.filter";
+import { UnicodeInputPipe } from "./common/input";
+import { documentErrors } from "./common/openapi";
 import { type Request, type Response, type NextFunction } from "express";
 
 export function configureApp(app: INestApplication) {
@@ -8,16 +14,26 @@ export function configureApp(app: INestApplication) {
   app.use((request: Request, response: Response, next: NextFunction) => {
     if (request.path.startsWith("/api/auth/"))
       response.setHeader("Cache-Control", "no-store");
+    if (
+      ["POST", "PATCH"].includes(request.method) &&
+      (Number(request.headers["content-length"]) > 0 ||
+        request.headers["transfer-encoding"]) &&
+      !request.is("application/json")
+    ) {
+      next(new UnsupportedMediaTypeException("Expected application/json"));
+      return;
+    }
     next();
   });
   app.useGlobalPipes(
+    new UnicodeInputPipe(),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
     }),
   );
-  app.useGlobalFilters(new PrismaExceptionFilter());
+  app.useGlobalFilters(new ApiExceptionFilter());
   const specification = new DocumentBuilder()
     .setTitle("GameON API")
     .setVersion("1.0")
@@ -32,6 +48,7 @@ export function configureApp(app: INestApplication) {
     )
     .build();
   const document = SwaggerModule.createDocument(app, specification);
+  documentErrors(document);
   SwaggerModule.setup("api/docs", app, document);
   return document;
 }

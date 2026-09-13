@@ -40,18 +40,16 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
       db.game.count({ where: { id: { in: gameIds } } }),
       db.user.count({ where: { id: { in: userIds } } }),
       db.review.count({ where: { authorId: { in: userIds } } }),
-      db.order.count({ where: { userId: { in: userIds } } }),
     ]);
   }
   async function clear() {
-    await db.order.deleteMany({ where: { userId: { in: userIds } } });
     await db.review.deleteMany({ where: { authorId: { in: userIds } } });
     await db.game.deleteMany({ where: { id: { in: gameIds } } });
     await db.user.deleteMany({ where: { id: { in: userIds } } });
     await db.category.deleteMany({ where: { id: { in: categoryIds } } });
   }
   try {
-    assert.deepEqual(await counts(), [0, 0, 0, 0, 0]);
+    assert.deepEqual(await counts(), [0, 0, 0, 0]);
     await assert.rejects(
       runSeed(db, env, async (input) =>
         String(input).includes("oauth2")
@@ -60,7 +58,7 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
       ),
       /IGDB/,
     );
-    assert.deepEqual(await counts(), [0, 0, 0, 0, 0]);
+    assert.deepEqual(await counts(), [0, 0, 0, 0]);
     const imported = await fetchGames(
       { clientId: "test", clientSecret: "test" },
       mockIgdb,
@@ -72,11 +70,11 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
       ),
       /Unknown seed category/,
     );
-    assert.deepEqual(await counts(), [0, 0, 0, 0, 0]);
+    assert.deepEqual(await counts(), [0, 0, 0, 0]);
 
     const first = await runSeed(db, env, mockIgdb);
     assert.equal(first.games, 12);
-    assert.deepEqual(await counts(), [6, 12, 3, demoReviews.length, 2]);
+    assert.deepEqual(await counts(), [6, 12, 3, demoReviews.length]);
     const playerId = seedId("user:demo@gameon.test");
     const player = await db.user.findUniqueOrThrow({ where: { id: playerId } });
     assert.equal(player.displayName, "Demo");
@@ -104,10 +102,6 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
       await db.review.count({ where: { gameId: seedId("game:factorio") } }),
       0,
     );
-    assert.equal(
-      await db.order.count({ where: { gameId: seedId("game:factorio") } }),
-      0,
-    );
 
     const gameId = seedId("game:hades");
     await db.game.update({
@@ -116,7 +110,7 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
     });
     const second = await runSeed(db, env, mockIgdb);
     assert.deepEqual(second.users, first.users);
-    assert.deepEqual(await counts(), [6, 12, 3, demoReviews.length, 2]);
+    assert.deepEqual(await counts(), [6, 12, 3, demoReviews.length]);
     assert.equal(
       (await db.game.findUniqueOrThrow({ where: { id: gameId } })).title,
       "Edited title",
@@ -126,14 +120,10 @@ test("Seeding: atomic, repeatable, non-destructive and usable in production", as
         .passwordHash,
       player.passwordHash,
     );
-    const order = await db.order.findUniqueOrThrow({
-      where: { id: seedId("order:matas@gameon.test:hades") },
-    });
-    assert.equal(order.unitPriceAtPurchase.toFixed(2), "24.99");
 
     await clear();
     await runSeed(db, { ...env, NODE_ENV: "production" }, mockIgdb);
-    assert.deepEqual(await counts(), [6, 12, 3, demoReviews.length, 2]);
+    assert.deepEqual(await counts(), [6, 12, 3, demoReviews.length]);
     const productionHash = (
       await db.user.findUniqueOrThrow({ where: { id: playerId } })
     ).passwordHash.split("$");

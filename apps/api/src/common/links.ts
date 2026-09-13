@@ -59,7 +59,3 @@ export function reviewLinks(id: string, gameId: string): GameChildLinksView {
     game: link(`/games/${gameId}`),
   };
 }
-
-export function orderLinks(id: string, gameId: string): GameChildLinksView {
-  return { self: link(`/orders/${id}`), game: link(`/games/${gameId}`) };
-}

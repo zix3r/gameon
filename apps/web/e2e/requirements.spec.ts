@@ -246,21 +246,12 @@ test("category, game and review CRUD through dialogs", async ({
       .click();
     await expect(page).toHaveURL(gameUrl);
     await page
-      .getByRole("button", { name: "Place demo order", exact: true })
+      .getByRole("button", { name: "Write a review", exact: true })
       .click();
-    await expect(page.getByRole("dialog")).toContainText(
-      "You will not be charged",
-    );
-    await page.getByRole("checkbox").check();
-    await expect(
-      page
-        .getByRole("dialog")
-        .getByRole("button", { name: "Place demo order", exact: true }),
-    ).toBeEnabled();
     await page.keyboard.press("Escape");
     await expect(dialog).toHaveCount(0);
     await expect(
-      page.getByRole("button", { name: "Place demo order", exact: true }),
+      page.getByRole("button", { name: "Write a review", exact: true }),
     ).toBeFocused();
     await page.getByRole("button", { name: "Sign out", exact: true }).click();
     await expect(page.getByRole("link", { name: "Join GameON" })).toBeVisible();

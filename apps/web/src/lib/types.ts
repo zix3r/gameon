@@ -55,16 +55,6 @@ export interface Review {
   updatedAt: string;
   author: { id: string; displayName: string };
 }
-export interface Order {
-  _links: ResourceLinks & { game: Link };
-  id: string;
-  gameId: string;
-  userId: string;
-  unitPriceAtPurchase: string;
-  currency: string;
-  createdAt: string;
-  game: { id: string; title: string };
-}
 export interface Page<T> {
   _links: PageLinks;
   items: T[];

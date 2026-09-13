@@ -6,7 +6,6 @@ import {
   LogOut,
   ShieldCheck,
   ArrowUpRight,
-  ShoppingBag,
   UserRound,
   LogIn,
   UserPlus,
@@ -70,16 +69,6 @@ function Header() {
             <Gamepad2 size={16} aria-hidden="true" />
             Discover games
           </NavLink>
-          {auth.user && (
-            <NavLink
-              className={linkClass}
-              to="/orders"
-              onClick={() => setOpen(false)}
-            >
-              <ShoppingBag size={16} aria-hidden="true" />
-              My orders
-            </NavLink>
-          )}
           {auth.user && (
             <NavLink
               className={linkClass}
@@ -226,8 +215,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
           <p className="mb-0 w-full md:w-auto md:text-right">
             University project
-            <br />
-            Demo orders only. No payments or downloads.
+            <br />A catalogue shaped by player reviews.
           </p>
         </div>
       </footer>
@@ -258,10 +246,6 @@ export function AdminNavigation() {
       <NavLink className={style} to="/admin/reviews">
         <MessageSquare size={16} aria-hidden="true" />
         Reviews
-      </NavLink>
-      <NavLink className={style} to="/admin/orders">
-        <ShoppingBag size={16} aria-hidden="true" />
-        All orders
       </NavLink>
     </nav>
   );

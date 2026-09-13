@@ -11,7 +11,6 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import {
-  ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCookieAuth,
   ApiCreatedResponse,
@@ -51,7 +50,6 @@ const csrfHeader = {
 };
 
 @ApiTags("Authentication")
-@ApiBadRequestResponse({ description: "Invalid input" })
 @ApiTooManyRequestsResponse({ description: "Too many requests; retry later" })
 @Controller("auth")
 export class AuthController {

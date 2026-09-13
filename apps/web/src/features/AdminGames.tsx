@@ -214,7 +214,7 @@ export function AdminGames() {
       <PageHeading
         title="Games"
         eyebrow="Administration"
-        description="Manage game details, covers, categories, and demonstration prices."
+        description="Manage game details, covers, categories, and reference prices."
       >
         <button className="button" onClick={() => setEditor({})}>
           <Plus size={17} aria-hidden="true" />
@@ -344,7 +344,6 @@ export function AdminGames() {
         >
           <p>
             This permanently removes the game. Reviews must be removed first.
-            Games with existing orders cannot be deleted.
           </p>
         </ConfirmDialog>
       )}

@@ -71,7 +71,7 @@ export function HomePage() {
             <ArrowRight size={18} aria-hidden="true" />
           </Link>
           <p className="mt-4 mb-0 text-xs text-muted">
-            A university project. All orders are demonstrations.
+            A university project for discovering and reviewing games.
           </p>
         </div>
         <div

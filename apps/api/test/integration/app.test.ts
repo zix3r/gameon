@@ -12,7 +12,6 @@ import {
   type CategoryView,
   type GameView,
   type ReviewView,
-  type OrderView,
 } from "../../src/common/views";
 
 type Page<T> = {
@@ -37,7 +36,6 @@ test("Core application flows", async (t) => {
   let category: CategoryView;
   let game: GameView;
   let review: ReviewView;
-  let order: OrderView;
   try {
     await db.user.create({
       data: {
@@ -412,81 +410,6 @@ test("Core application flows", async (t) => {
     });
 
     await t.test(
-      "orders are private and preserve their purchase price",
-      async () => {
-        await request(
-          "POST",
-          "/orders",
-          400,
-          { gameId: game.id, userId: other.user.id },
-          owner.accessToken,
-        );
-        order = await request<OrderView>(
-          "POST",
-          "/orders",
-          201,
-          { gameId: game.id },
-          owner.accessToken,
-        );
-        assert.equal(order.userId, owner.user.id);
-        await request(
-          "GET",
-          order._links.self.href.slice(4),
-          200,
-          undefined,
-          owner.accessToken,
-        );
-        await request("GET", order._links.game.href.slice(4), 200);
-        await request(
-          "GET",
-          `/orders/${order.id}`,
-          404,
-          undefined,
-          other.accessToken,
-        );
-        await request(
-          "GET",
-          `/orders?userId=${owner.user.id}`,
-          403,
-          undefined,
-          other.accessToken,
-        );
-        assert.equal(
-          (
-            await request<Page<OrderView>>(
-              "GET",
-              "/orders",
-              200,
-              undefined,
-              owner.accessToken,
-            )
-          ).total,
-          1,
-        );
-        await request("GET", `/orders/${order.id}`, 200, undefined, adminToken);
-        await request(
-          "PATCH",
-          `/games/${game.id}`,
-          200,
-          { price: "99.99" },
-          adminToken,
-        );
-        assert.equal(
-          (
-            await request<OrderView>(
-              "GET",
-              `/orders/${order.id}`,
-              200,
-              undefined,
-              owner.accessToken,
-            )
-          ).unitPriceAtPurchase,
-          "12.34",
-        );
-      },
-    );
-
-    await t.test(
       "deletions respect relationships and review moderation",
       async () => {
         await request(
@@ -515,14 +438,6 @@ test("Core application flows", async (t) => {
             .reviewCount,
           0,
         );
-        await request(
-          "DELETE",
-          `/games/${game.id}`,
-          409,
-          undefined,
-          adminToken,
-        );
-        await db.order.delete({ where: { id: order.id } });
         await request(
           "DELETE",
           `/games/${game.id}`,

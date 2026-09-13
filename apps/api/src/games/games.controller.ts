@@ -55,6 +55,9 @@ export class GamesController {
   @ApiOperation({ summary: "Create a game" })
   @ApiCreatedResponse({ type: GameView })
   @ApiNotFoundResponse({ description: "Category not found" })
+  @ApiConflictResponse({
+    description: "Category changed during the request; retry",
+  })
   create(@Body() dto: CreateGameDto) {
     return this.games.create(dto);
   }
@@ -64,6 +67,9 @@ export class GamesController {
   @ApiOperation({ summary: "Update a game" })
   @ApiOkResponse({ type: GameView })
   @ApiNotFoundResponse()
+  @ApiConflictResponse({
+    description: "Category changed during the request; retry",
+  })
   update(
     @Param("id", ParseUUIDPipe) id: string,
     @Body(NonEmptyBodyPipe) dto: UpdateGameDto,
@@ -74,10 +80,10 @@ export class GamesController {
   @Delete(":id")
   @AdminOnly()
   @HttpCode(204)
-  @ApiOperation({ summary: "Delete a game without reviews or orders" })
+  @ApiOperation({ summary: "Delete a game without reviews" })
   @ApiNoContentResponse()
   @ApiNotFoundResponse()
-  @ApiConflictResponse({ description: "Game still has reviews or orders" })
+  @ApiConflictResponse({ description: "Game still has reviews" })
   delete(@Param("id", ParseUUIDPipe) id: string) {
     return this.games.delete(id);
   }

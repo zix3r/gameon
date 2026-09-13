@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { Link, useParams } from "react-router";
-import { Monitor, ShoppingBag } from "lucide-react";
-import { useAuth } from "../auth/AuthProvider";
+import { Monitor } from "lucide-react";
 import { money, useCategories, useGame } from "../lib/queries";
 import {
   BackLink,
@@ -12,14 +10,11 @@ import {
   Rating,
 } from "../components/ui";
 import { ReviewSection } from "./reviews";
-import { OrderDialog } from "./orders";
 
 export function GamePage() {
   const { gameId = "" } = useParams();
   const game = useGame(gameId);
   const categories = useCategories();
-  const auth = useAuth();
-  const [ordering, setOrdering] = useState(false);
   if (game.isPending) return <Loading label="Loading game…" />;
   if (game.isError)
     return (
@@ -64,26 +59,8 @@ export function GamePage() {
             <strong className="text-3xl tracking-tight">
               {money(game.data.price)}
             </strong>
-            {auth.user ? (
-              <button
-                className="button"
-                disabled={auth.status === "loading"}
-                onClick={() => setOrdering(true)}
-              >
-                <ShoppingBag size={17} aria-hidden="true" />
-                Place demo order
-              </button>
-            ) : (
-              <Link
-                className="button"
-                to="/login"
-                state={{ from: `/games/${gameId}` }}
-              >
-                Sign in to order
-              </Link>
-            )}
-            <span className="w-full text-xs text-muted">
-              Demo only. No real payment or game delivery.
+            <span className="text-xs text-muted">
+              Reference price. Explore player reviews below.
             </span>
           </div>
         </div>
@@ -93,9 +70,6 @@ export function GamePage() {
         gameId={gameId}
         reviewsHref={game.data._links.reviews.href}
       />
-      {ordering && (
-        <OrderDialog game={game.data} onClose={() => setOrdering(false)} />
-      )}
     </>
   );
 }

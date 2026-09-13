@@ -5,7 +5,6 @@ import {
   categoryLinks,
   gameLinks,
   link,
-  orderLinks,
   reviewLinks,
 } from "../src/common/links";
 import { pageResult } from "../src/common/pagination.dto";
@@ -20,7 +19,6 @@ test("resource links point to implemented routes", () => {
     reviewLinks("review", "game").self.href,
     "/api/games/game/reviews/review",
   );
-  assert.equal(orderLinks("order", "game").self.href, "/api/orders/order");
 });
 
 test("pagination retains encoded filters and omits unavailable directions", () => {

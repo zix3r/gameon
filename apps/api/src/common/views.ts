@@ -45,17 +45,3 @@ export class ReviewView extends EditableView {
   @ApiProperty({ minimum: 1, maximum: 5 }) rating!: number;
   @ApiProperty({ type: AuthorView }) author!: AuthorView;
 }
-
-export class OrderedGameView {
-  @ApiProperty({ format: "uuid" }) id!: string;
-  @ApiProperty() title!: string;
-}
-
-export class OrderView extends RecordView {
-  @ApiProperty({ type: GameChildLinksView }) _links!: GameChildLinksView;
-  @ApiProperty({ format: "uuid" }) gameId!: string;
-  @ApiProperty({ format: "uuid" }) userId!: string;
-  @ApiProperty({ example: "19.99" }) unitPriceAtPurchase!: string;
-  @ApiProperty({ enum: ["EUR"] }) currency!: string;
-  @ApiProperty({ type: OrderedGameView }) game!: OrderedGameView;
-}

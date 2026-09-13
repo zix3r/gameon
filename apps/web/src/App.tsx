@@ -5,7 +5,6 @@ import { AdminOverview } from "./features/AdminOverview";
 import { AdminReviews } from "./features/AdminReviews";
 import { GamePage } from "./features/GamePage";
 import { ReviewPage } from "./features/reviews";
-import { OrdersPage, OrderPage } from "./features/orders";
 import { AuthProvider, RequireAuth } from "./auth/AuthProvider";
 import { AuthPage } from "./auth/AuthPage";
 import { AccountPage } from "./auth/AccountPage";
@@ -52,14 +51,6 @@ export function App() {
             }
           />
           <Route
-            path="/admin/orders"
-            element={
-              <RequireAuth admin>
-                <OrdersPage admin />
-              </RequireAuth>
-            }
-          />
-          <Route
             path="/account"
             element={
               <RequireAuth>
@@ -72,22 +63,6 @@ export function App() {
           <Route
             path="/games/:gameId/reviews/:reviewId"
             element={<ReviewPage />}
-          />
-          <Route
-            path="/orders"
-            element={
-              <RequireAuth>
-                <OrdersPage />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/orders/:orderId"
-            element={
-              <RequireAuth>
-                <OrderPage />
-              </RequireAuth>
-            }
           />
           <Route path="/categories/:categoryId" element={<CategoryPage />} />
           <Route

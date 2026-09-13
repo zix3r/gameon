@@ -1,28 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 import {
   ArrowUpRight,
   FolderTree,
   Gamepad2,
   MessageSquare,
-  ShoppingBag,
 } from "lucide-react";
-import { useAuth } from "../auth/AuthProvider";
-import { api } from "../lib/api";
 import { useCategories, useGames } from "../lib/queries";
-import { type Order, type Page } from "../lib/types";
 import { AdminNavigation } from "../components/Layout";
 import { Notice, PageHeading } from "../components/ui";
 
 export function AdminOverview() {
-  const { user } = useAuth();
   const games = useGames({ pageSize: 1 });
   const categories = useCategories();
-  const orders = useQuery({
-    queryKey: ["private", user?.id, user?.role, "order-count"],
-    queryFn: ({ signal }) =>
-      api<Page<Order>>("/orders?pageSize=1", { auth: true, signal }),
-  });
   const stats = [
     {
       label: "Games",
@@ -37,13 +26,6 @@ export function AdminOverview() {
       error: categories.isError,
       retry: categories.refetch,
       to: "/admin/categories",
-    },
-    {
-      label: "Demo orders",
-      value: orders.data?.total,
-      error: orders.isError,
-      retry: orders.refetch,
-      to: "/admin/orders",
     },
   ];
   const sections = [
@@ -65,12 +47,6 @@ export function AdminOverview() {
       icon: MessageSquare,
       to: "/admin/reviews",
     },
-    {
-      title: "All orders",
-      description: "Inspect demonstration purchases across all accounts.",
-      icon: ShoppingBag,
-      to: "/admin/orders",
-    },
   ];
   return (
     <>
@@ -85,7 +61,7 @@ export function AdminOverview() {
           <ArrowUpRight size={17} aria-hidden="true" />
         </Link>
       </PageHeading>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         {stats.map((stat) => (
           <div className="panel" key={stat.label}>
             {stat.error ? (

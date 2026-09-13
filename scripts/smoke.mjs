@@ -117,7 +117,7 @@ async function demonstrate() {
     player,
   );
   await call("POST", "/auth/refresh", 200, undefined, player);
-  const user = await call("GET", "/auth/me", 200, undefined, player);
+  await call("GET", "/auth/me", 200, undefined, player);
 
   section("3. CATEGORIES");
   const category = await call(
@@ -193,19 +193,21 @@ async function demonstrate() {
   );
   assert.equal(updated.rating, 4);
 
-  section("6. ORDERS");
-  const order = await call("POST", "/orders", 201, { gameId: game.id }, player);
-  assert.equal(order.userId, user.id);
-  assert.equal(order.unitPriceAtPurchase, "12.34");
-  const orders = await call("GET", "/orders", 200, undefined, player);
-  assert.equal(orders.items[0].id, order.id);
-  await call("GET", `/orders/${order.id}`, 200, undefined, player);
-
-  section("7. EXPECTED ERRORS");
+  section("6. EXPECTED ERRORS");
   await call("PATCH", `/games/${game.id}`, 400, { price: "-1" }, admin);
   await call("GET", `/games/${randomUUID()}`, 404);
-  section("8. DELETION AND SIGN-OUT");
-  await db.order.delete({ where: { id: order.id, userId: user.id } });
+  await call("GET", "/categories?search=%00", 400);
+  await call("GET", "/games?search=%00", 400);
+  await call("GET", "/auth/me", 401);
+  await call("POST", "/categories", 403, {}, player);
+  await call(
+    "POST",
+    "/categories",
+    409,
+    { name, description: "Duplicate category" },
+    admin,
+  );
+  section("7. DELETION AND SIGN-OUT");
   await call(
     "DELETE",
     `/games/${game.id}/reviews/${review.id}`,
@@ -244,7 +246,6 @@ async function cleanup() {
     }
   } finally {
     await db.$transaction([
-      db.order.deleteMany({ where: { user: { email } } }),
       db.review.deleteMany({ where: { author: { email } } }),
       db.game.deleteMany({ where: { category: { name } } }),
       db.category.deleteMany({ where: { name } }),
@@ -258,7 +259,7 @@ try {
   await cleanup();
   section("SUMMARY");
   console.log(
-    `  Result:       PASS\n  API methods:  ${total}/${total}\n  HTTP calls:   ${requests}\n  Error cases:  400, 404 verified\n  Cleanup:      Temporary data removed\n  Duration:     ${((performance.now() - started) / 1000).toFixed(2)} s`,
+    `  Result:       PASS\n  API methods:  ${total}/${total}\n  HTTP calls:   ${requests}\n  Error cases:  400, 401, 403, 404, 409 verified\n  Cleanup:      Temporary data removed\n  Duration:     ${((performance.now() - started) / 1000).toFixed(2)} s`,
   );
 } catch (error) {
   console.error(`FAIL: ${error.message}`);
