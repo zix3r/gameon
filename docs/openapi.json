@@ -1,0 +1,4630 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status"],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["ok"]
+                    }
+                  },
+                  "example": {
+                    "status": "ok"
+                  }
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Check application and database readiness",
+        "tags": ["Health"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/health\""
+          }
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [
+          {
+            "name": "X-GameON-CSRF",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["1"]
+            },
+            "example": "1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              },
+              "example": {
+                "email": "player@example.com",
+                "password": "Example1234",
+                "displayName": "Player"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthView"
+                },
+                "example": {
+                  "accessToken": "ACCESS_TOKEN_FROM_LOGIN",
+                  "expiresIn": 900,
+                  "tokenType": "Bearer",
+                  "user": {
+                    "id": 2,
+                    "email": "player@example.com",
+                    "displayName": "Player",
+                    "role": "USER",
+                    "_links": {
+                      "self": {
+                        "href": "/api/auth/me"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input or malformed JSON"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions or invalid request origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Insufficient permissions or invalid request origin"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 409,
+                  "message": "Email already registered"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry later",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry later"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register a regular user and start a session",
+        "tags": ["Authentication"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X POST \\\n  \"$BASE/api/auth/register\" \\\n  -H 'X-GameON-CSRF: 1' \\\n  -b cookies.txt -c cookies.txt \\\n  -H 'Content-Type: application/json' \\\n  --data '{\"email\":\"player@example.com\",\"password\":\"Example1234\",\"displayName\":\"Player\"}'"
+          }
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [
+          {
+            "name": "X-GameON-CSRF",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["1"]
+            },
+            "example": "1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              },
+              "example": {
+                "email": "demo@gameon.test",
+                "password": "Demo1234"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthView"
+                },
+                "example": {
+                  "accessToken": "ACCESS_TOKEN_FROM_LOGIN",
+                  "expiresIn": 900,
+                  "tokenType": "Bearer",
+                  "user": {
+                    "id": 2,
+                    "email": "demo@gameon.test",
+                    "displayName": "Player",
+                    "role": "USER",
+                    "_links": {
+                      "self": {
+                        "href": "/api/auth/me"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input or malformed JSON"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Invalid email or password"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions or invalid request origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Insufficient permissions or invalid request origin"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry later",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry later"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Log in and receive an access token and refresh cookie",
+        "tags": ["Authentication"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X POST \\\n  \"$BASE/api/auth/login\" \\\n  -H 'X-GameON-CSRF: 1' \\\n  -b cookies.txt -c cookies.txt \\\n  -H 'Content-Type: application/json' \\\n  --data '{\"email\":\"demo@gameon.test\",\"password\":\"Demo1234\"}'"
+          }
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [
+          {
+            "name": "X-GameON-CSRF",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["1"]
+            },
+            "example": "1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthView"
+                },
+                "example": {
+                  "accessToken": "ACCESS_TOKEN_FROM_LOGIN",
+                  "expiresIn": 900,
+                  "tokenType": "Bearer",
+                  "user": {
+                    "id": 2,
+                    "email": "demo@gameon.test",
+                    "displayName": "Player",
+                    "role": "USER",
+                    "_links": {
+                      "self": {
+                        "href": "/api/auth/me"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input or malformed JSON"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Expired, revoked or reused refresh token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Expired, revoked or reused refresh token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions or invalid request origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Insufficient permissions or invalid request origin"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry later",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry later"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "refresh": []
+          }
+        ],
+        "summary": "Rotate the refresh cookie and issue an access token",
+        "tags": ["Authentication"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X POST \\\n  \"$BASE/api/auth/refresh\" \\\n  -H 'X-GameON-CSRF: 1' \\\n  -b cookies.txt -c cookies.txt"
+          }
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [
+          {
+            "name": "X-GameON-CSRF",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["1"]
+            },
+            "example": "1"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input or malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input or malformed JSON"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions or invalid request origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Insufficient permissions or invalid request origin"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry later",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry later"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "refresh": []
+          }
+        ],
+        "summary": "Revoke the current session and clear its cookie",
+        "tags": ["Authentication"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X POST \\\n  \"$BASE/api/auth/logout\" \\\n  -H 'X-GameON-CSRF: 1' \\\n  -b cookies.txt -c cookies.txt"
+          }
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserView"
+                },
+                "example": {
+                  "id": 2,
+                  "email": "demo@gameon.test",
+                  "displayName": "Player",
+                  "role": "USER",
+                  "_links": {
+                    "self": {
+                      "href": "/api/auth/me"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry later",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry later"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the authenticated user",
+        "tags": ["Authentication"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/auth/me\" \\\n  -H \"Authorization: Bearer $TOKEN\""
+          }
+        ]
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "operationId": "CategoriesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "integer",
+              "maximum": 1000000
+            },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            },
+            "example": "Action"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "page", "pageSize", "total", "_links"],
+                  "properties": {
+                    "_links": {
+                      "$ref": "#/components/schemas/PageLinksView"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CategoryView"
+                      }
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "pageSize": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": 1,
+                      "name": "Action",
+                      "description": "Greito veiksmo žaidimai.",
+                      "createdAt": "2026-09-13T10:00:00.000Z",
+                      "updatedAt": "2026-09-13T10:00:00.000Z",
+                      "_links": {
+                        "self": {
+                          "href": "/api/categories/1"
+                        },
+                        "games": {
+                          "href": "/api/games?categoryId=1"
+                        }
+                      }
+                    }
+                  ],
+                  "page": 1,
+                  "pageSize": 20,
+                  "total": 1,
+                  "_links": {
+                    "self": {
+                      "href": "/api/categories?page=1&pageSize=20"
+                    },
+                    "first": {
+                      "href": "/api/categories?page=1&pageSize=20"
+                    },
+                    "last": {
+                      "href": "/api/categories?page=1&pageSize=20"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List categories",
+        "tags": ["Categories"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/categories\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "CategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              },
+              "example": {
+                "name": "Action",
+                "description": "Greito veiksmo žaidimai."
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryView"
+                },
+                "example": {
+                  "id": 1,
+                  "name": "Action",
+                  "description": "Greito veiksmo žaidimai.",
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:00:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/categories/1"
+                    },
+                    "games": {
+                      "href": "/api/games?categoryId=1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Administrator role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Administrator role required"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 409,
+                  "message": "Category name already exists"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a category",
+        "tags": ["Categories"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X POST \\\n  \"$BASE/api/categories\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\"name\":\"Action\",\"description\":\"Greito veiksmo žaidimai.\"}'"
+          }
+        ]
+      }
+    },
+    "/api/categories/{id}": {
+      "get": {
+        "operationId": "CategoriesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryView"
+                },
+                "example": {
+                  "id": 1,
+                  "name": "Action",
+                  "description": "Greito veiksmo žaidimai.",
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:00:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/categories/1"
+                    },
+                    "games": {
+                      "href": "/api/games?categoryId=1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found in the requested scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Resource not found in the requested scope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a category",
+        "tags": ["Categories"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/categories/1\""
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "CategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              },
+              "example": {
+                "description": "Veiksmo ir nuotykių žaidimai."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryView"
+                },
+                "example": {
+                  "id": 1,
+                  "name": "Action",
+                  "description": "Veiksmo ir nuotykių žaidimai.",
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:30:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/categories/1"
+                    },
+                    "games": {
+                      "href": "/api/games?categoryId=1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Administrator role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Administrator role required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found in the requested scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Resource not found in the requested scope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Operation conflicts with existing records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 409,
+                  "message": "Operation conflicts with existing records"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a category",
+        "tags": ["Categories"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X PATCH \\\n  \"$BASE/api/categories/1\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\"description\":\"Veiksmo ir nuotykių žaidimai.\"}'"
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "CategoriesController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Administrator role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Administrator role required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found in the requested scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Resource not found in the requested scope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category still contains games",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 409,
+                  "message": "Category still contains games"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an empty category",
+        "tags": ["Categories"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X DELETE \\\n  \"$BASE/api/categories/1\" \\\n  -H \"Authorization: Bearer $TOKEN\""
+          }
+        ]
+      }
+    },
+    "/api/games": {
+      "get": {
+        "operationId": "GamesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "integer",
+              "maximum": 1000000
+            },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 2147483647,
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "example": "Hades"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "page", "pageSize", "total", "_links"],
+                  "properties": {
+                    "_links": {
+                      "$ref": "#/components/schemas/PageLinksView"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/GameView"
+                      }
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "pageSize": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": 1,
+                      "categoryId": 1,
+                      "title": "Hades",
+                      "description": "Veiksmo žaidimas, kuriame mėginama ištrūkti iš požemio.",
+                      "platform": "PC",
+                      "imageUrl": null,
+                      "igdbId": null,
+                      "averageRating": 4,
+                      "reviewCount": 1,
+                      "createdAt": "2026-09-13T10:00:00.000Z",
+                      "updatedAt": "2026-09-13T10:00:00.000Z",
+                      "_links": {
+                        "self": {
+                          "href": "/api/games/1"
+                        },
+                        "category": {
+                          "href": "/api/categories/1"
+                        },
+                        "reviews": {
+                          "href": "/api/categories/1/games/1/reviews"
+                        }
+                      }
+                    }
+                  ],
+                  "page": 1,
+                  "pageSize": 20,
+                  "total": 1,
+                  "_links": {
+                    "self": {
+                      "href": "/api/games?page=1&pageSize=20"
+                    },
+                    "first": {
+                      "href": "/api/games?page=1&pageSize=20"
+                    },
+                    "last": {
+                      "href": "/api/games?page=1&pageSize=20"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List, search and filter games",
+        "tags": ["Games"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/games\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "GamesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGameDto"
+              },
+              "example": {
+                "categoryId": 1,
+                "title": "Hades",
+                "description": "Veiksmo žaidimas, kuriame mėginama ištrūkti iš požemio.",
+                "platform": "PC",
+                "imageUrl": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameView"
+                },
+                "example": {
+                  "id": 1,
+                  "categoryId": 1,
+                  "title": "Hades",
+                  "description": "Veiksmo žaidimas, kuriame mėginama ištrūkti iš požemio.",
+                  "platform": "PC",
+                  "imageUrl": null,
+                  "igdbId": null,
+                  "averageRating": 4,
+                  "reviewCount": 1,
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:00:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/games/1"
+                    },
+                    "category": {
+                      "href": "/api/categories/1"
+                    },
+                    "reviews": {
+                      "href": "/api/categories/1/games/1/reviews"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Administrator role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Administrator role required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Category not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Category not found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category changed during the request; retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 409,
+                  "message": "Category changed during the request; retry"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a game",
+        "tags": ["Games"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X POST \\\n  \"$BASE/api/games\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\"categoryId\":1,\"title\":\"Hades\",\"description\":\"Veiksmo žaidimas, kuriame mėginama ištrūkti iš požemio.\",\"platform\":\"PC\",\"imageUrl\":null}'"
+          }
+        ]
+      }
+    },
+    "/api/games/{id}": {
+      "get": {
+        "operationId": "GamesController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameView"
+                },
+                "example": {
+                  "id": 1,
+                  "categoryId": 1,
+                  "title": "Hades",
+                  "description": "Veiksmo žaidimas, kuriame mėginama ištrūkti iš požemio.",
+                  "platform": "PC",
+                  "imageUrl": null,
+                  "igdbId": null,
+                  "averageRating": 4,
+                  "reviewCount": 1,
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:00:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/games/1"
+                    },
+                    "category": {
+                      "href": "/api/categories/1"
+                    },
+                    "reviews": {
+                      "href": "/api/categories/1/games/1/reviews"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found in the requested scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Resource not found in the requested scope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a game",
+        "tags": ["Games"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/games/1\""
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "GamesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGameDto"
+              },
+              "example": {
+                "description": "Patikslintas žaidimo aprašymas.",
+                "platform": "PC"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameView"
+                },
+                "example": {
+                  "id": 1,
+                  "categoryId": 1,
+                  "title": "Hades",
+                  "description": "Patikslintas žaidimo aprašymas.",
+                  "platform": "PC",
+                  "imageUrl": null,
+                  "igdbId": null,
+                  "averageRating": 4,
+                  "reviewCount": 1,
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:30:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/games/1"
+                    },
+                    "category": {
+                      "href": "/api/categories/1"
+                    },
+                    "reviews": {
+                      "href": "/api/categories/1/games/1/reviews"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Administrator role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Administrator role required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found in the requested scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Resource not found in the requested scope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category changed during the request; retry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 409,
+                  "message": "Category changed during the request; retry"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a game",
+        "tags": ["Games"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X PATCH \\\n  \"$BASE/api/games/1\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\"description\":\"Patikslintas žaidimo aprašymas.\",\"platform\":\"PC\"}'"
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "GamesController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Administrator role required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Administrator role required"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found in the requested scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Resource not found in the requested scope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Game still has reviews",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 409,
+                  "message": "Game still has reviews"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a game without reviews",
+        "tags": ["Games"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X DELETE \\\n  \"$BASE/api/games/1\" \\\n  -H \"Authorization: Bearer $TOKEN\""
+          }
+        ]
+      }
+    },
+    "/api/games/{gameId}/reviews": {
+      "get": {
+        "operationId": "ReviewsController_list",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "integer",
+              "maximum": 1000000
+            },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "authorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 2147483647,
+              "type": "integer"
+            },
+            "example": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "page", "pageSize", "total", "_links"],
+                  "properties": {
+                    "_links": {
+                      "$ref": "#/components/schemas/PageLinksView"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ReviewView"
+                      }
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "pageSize": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": 1,
+                      "gameId": 1,
+                      "authorId": 2,
+                      "text": "Įdomios kovos ir aiškus progresas.",
+                      "rating": 4,
+                      "author": {
+                        "id": 2,
+                        "displayName": "Player"
+                      },
+                      "createdAt": "2026-09-13T10:00:00.000Z",
+                      "updatedAt": "2026-09-13T10:00:00.000Z",
+                      "_links": {
+                        "self": {
+                          "href": "/api/games/1/reviews/1"
+                        },
+                        "game": {
+                          "href": "/api/games/1"
+                        }
+                      }
+                    }
+                  ],
+                  "page": 1,
+                  "pageSize": 20,
+                  "total": 1,
+                  "_links": {
+                    "self": {
+                      "href": "/api/games/1/reviews?page=1&pageSize=20"
+                    },
+                    "first": {
+                      "href": "/api/games/1/reviews?page=1&pageSize=20"
+                    },
+                    "last": {
+                      "href": "/api/games/1/reviews?page=1&pageSize=20"
+                    },
+                    "game": {
+                      "href": "/api/games/1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game or nested review not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Game or nested review not found"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List reviews belonging to a game",
+        "tags": ["Reviews"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/games/1/reviews\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "ReviewsController_create",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              },
+              "example": {
+                "text": "Įdomios kovos ir aiškus progresas.",
+                "rating": 4
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewView"
+                },
+                "example": {
+                  "id": 1,
+                  "gameId": 1,
+                  "authorId": 2,
+                  "text": "Įdomios kovos ir aiškus progresas.",
+                  "rating": 4,
+                  "author": {
+                    "id": 2,
+                    "displayName": "Player"
+                  },
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:00:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/games/1/reviews/1"
+                    },
+                    "game": {
+                      "href": "/api/games/1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game or nested review not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Game or nested review not found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Author already reviewed this game",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 409,
+                  "message": "Author already reviewed this game"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a game review",
+        "tags": ["Reviews"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X POST \\\n  \"$BASE/api/games/1/reviews\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\"text\":\"Įdomios kovos ir aiškus progresas.\",\"rating\":4}'"
+          }
+        ]
+      }
+    },
+    "/api/games/{gameId}/reviews/{id}": {
+      "get": {
+        "operationId": "ReviewsController_get",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewView"
+                },
+                "example": {
+                  "id": 1,
+                  "gameId": 1,
+                  "authorId": 2,
+                  "text": "Įdomios kovos ir aiškus progresas.",
+                  "rating": 4,
+                  "author": {
+                    "id": 2,
+                    "displayName": "Player"
+                  },
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:00:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/games/1/reviews/1"
+                    },
+                    "game": {
+                      "href": "/api/games/1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game or nested review not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Game or nested review not found"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a review belonging to a game",
+        "tags": ["Reviews"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/games/1/reviews/1\""
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "ReviewsController_update",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              },
+              "example": {
+                "text": "Po ilgesnio žaidimo vertinu dar geriau.",
+                "rating": 5
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewView"
+                },
+                "example": {
+                  "id": 1,
+                  "gameId": 1,
+                  "authorId": 2,
+                  "text": "Po ilgesnio žaidimo vertinu dar geriau.",
+                  "rating": 5,
+                  "author": {
+                    "id": 2,
+                    "displayName": "Player"
+                  },
+                  "createdAt": "2026-09-13T10:00:00.000Z",
+                  "updatedAt": "2026-09-13T10:30:00.000Z",
+                  "_links": {
+                    "self": {
+                      "href": "/api/games/1/reviews/1"
+                    },
+                    "game": {
+                      "href": "/api/games/1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the author may edit a review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Only the author may edit a review"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game or nested review not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Game or nested review not found"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 413,
+                  "message": "Request body exceeds 100 KB"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected application/json with supported encoding",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 415,
+                  "message": "Expected application/json with supported encoding"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update review text or rating",
+        "tags": ["Reviews"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X PATCH \\\n  \"$BASE/api/games/1/reviews/1\" \\\n  -H \"Authorization: Bearer $TOKEN\" \\\n  -H 'Content-Type: application/json' \\\n  --data '{\"text\":\"Po ilgesnio žaidimo vertinu dar geriau.\",\"rating\":5}'"
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "ReviewsController_delete",
+        "parameters": [
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired or revoked access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 401,
+                  "message": "Missing, expired or revoked access token"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string",
+                  "example": "Bearer"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the author or an administrator may delete a review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 403,
+                  "message": "Only the author or an administrator may delete a review"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game or nested review not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Game or nested review not found"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a game review",
+        "tags": ["Reviews"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  -X DELETE \\\n  \"$BASE/api/games/1/reviews/1\" \\\n  -H \"Authorization: Bearer $TOKEN\""
+          }
+        ]
+      }
+    },
+    "/api/categories/{categoryId}/games/{gameId}/reviews": {
+      "get": {
+        "operationId": "CategoryReviewsController_list",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          },
+          {
+            "name": "gameId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "integer",
+              "maximum": 1000000
+            },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            },
+            "example": 20
+          },
+          {
+            "name": "authorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 2147483647,
+              "type": "integer"
+            },
+            "example": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "page", "pageSize", "total", "_links"],
+                  "properties": {
+                    "_links": {
+                      "$ref": "#/components/schemas/PageLinksView"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ReviewView"
+                      }
+                    },
+                    "page": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "pageSize": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": 1,
+                      "gameId": 1,
+                      "authorId": 2,
+                      "text": "Įdomios kovos ir aiškus progresas.",
+                      "rating": 4,
+                      "author": {
+                        "id": 2,
+                        "displayName": "Player"
+                      },
+                      "createdAt": "2026-09-13T10:00:00.000Z",
+                      "updatedAt": "2026-09-13T10:00:00.000Z",
+                      "_links": {
+                        "self": {
+                          "href": "/api/games/1/reviews/1"
+                        },
+                        "game": {
+                          "href": "/api/games/1"
+                        }
+                      }
+                    }
+                  ],
+                  "page": 1,
+                  "pageSize": 20,
+                  "total": 1,
+                  "_links": {
+                    "self": {
+                      "href": "/api/categories/1/games/1/reviews?page=1&pageSize=20"
+                    },
+                    "first": {
+                      "href": "/api/categories/1/games/1/reviews?page=1&pageSize=20"
+                    },
+                    "last": {
+                      "href": "/api/categories/1/games/1/reviews?page=1&pageSize=20"
+                    },
+                    "game": {
+                      "href": "/api/games/1"
+                    },
+                    "category": {
+                      "href": "/api/categories/1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 400,
+                  "message": "Invalid input"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game not found in the requested category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 404,
+                  "message": "Game not found in the requested category"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests; retry after the Retry-After interval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 429,
+                  "message": "Too many requests; retry after the Retry-After interval"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "example": 60
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure; details are not exposed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 500,
+                  "message": "Unexpected internal failure; details are not exposed"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                "example": {
+                  "statusCode": 503,
+                  "message": "Database temporarily unavailable"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List reviews scoped through a category and game",
+        "tags": ["Reviews"],
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "label": "cURL",
+            "source": "curl -i \\\n  \"$BASE/api/categories/1/games/1/reviews\""
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "GameON API",
+    "description": "GameON REST API. Use Bearer access tokens for protected routes. Cookie-changing auth requests require X-GameON-CSRF: 1. Access tokens last 15 minutes; refresh sessions last up to 30 days. Documentation snapshot with illustrative request and response examples. IDs and tokens are examples, not live credentials. No ordering or pricing endpoints.",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Vietinė aplinka"
+    },
+    {
+      "url": "https://gameon-uni.duckdns.org",
+      "description": "Vieša sistema"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "refresh": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "gameon_refresh"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "demo@gameon.test",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "example": "Demo1234",
+            "minLength": 8,
+            "maxLength": 128
+          },
+          "displayName": {
+            "type": "string",
+            "example": "Player",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": ["email", "password", "displayName"],
+        "example": {
+          "email": "player@example.com",
+          "password": "Example1234",
+          "displayName": "Player"
+        }
+      },
+      "LinkView": {
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string"
+          }
+        },
+        "required": ["href"]
+      },
+      "ResourceLinksView": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "$ref": "#/components/schemas/LinkView"
+          }
+        },
+        "required": ["self"]
+      },
+      "UserView": {
+        "type": "object",
+        "properties": {
+          "_links": {
+            "$ref": "#/components/schemas/ResourceLinksView"
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["USER", "ADMIN"]
+          }
+        },
+        "required": ["_links", "id", "email", "displayName", "role"],
+        "example": {
+          "id": 2,
+          "email": "demo@gameon.test",
+          "displayName": "Player",
+          "role": "USER",
+          "_links": {
+            "self": {
+              "href": "/api/auth/me"
+            }
+          }
+        }
+      },
+      "AuthView": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "number",
+            "example": 900
+          },
+          "tokenType": {
+            "type": "string",
+            "enum": ["Bearer"]
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserView"
+          }
+        },
+        "required": ["accessToken", "expiresIn", "tokenType", "user"],
+        "example": {
+          "accessToken": "ACCESS_TOKEN_FROM_LOGIN",
+          "expiresIn": 900,
+          "tokenType": "Bearer",
+          "user": {
+            "id": 2,
+            "email": "demo@gameon.test",
+            "displayName": "Player",
+            "role": "USER",
+            "_links": {
+              "self": {
+                "href": "/api/auth/me"
+              }
+            }
+          }
+        }
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "demo@gameon.test",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "example": "Demo1234",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": ["email", "password"],
+        "example": {
+          "email": "demo@gameon.test",
+          "password": "Demo1234"
+        }
+      },
+      "CategoryLinksView": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "games": {
+            "$ref": "#/components/schemas/LinkView"
+          }
+        },
+        "required": ["self", "games"]
+      },
+      "CategoryView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/CategoryLinksView"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "_links",
+          "name",
+          "description"
+        ],
+        "example": {
+          "id": 1,
+          "name": "Action",
+          "description": "Greito veiksmo žaidimai.",
+          "createdAt": "2026-09-13T10:00:00.000Z",
+          "updatedAt": "2026-09-13T10:00:00.000Z",
+          "_links": {
+            "self": {
+              "href": "/api/categories/1"
+            },
+            "games": {
+              "href": "/api/games?categoryId=1"
+            }
+          }
+        }
+      },
+      "PageLinksView": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "first": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "last": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "next": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "prev": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "game": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "category": {
+            "$ref": "#/components/schemas/LinkView"
+          }
+        },
+        "required": ["self", "first", "last"]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Strategy"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "example": "Games focused on planning and tactical decisions."
+          }
+        },
+        "required": ["name", "description"],
+        "example": {
+          "name": "Action",
+          "description": "Greito veiksmo žaidimai."
+        }
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Strategy"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "example": "Games focused on planning and tactical decisions."
+          }
+        },
+        "example": {
+          "description": "Veiksmo ir nuotykių žaidimai."
+        }
+      },
+      "GameLinksView": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "category": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "reviews": {
+            "$ref": "#/components/schemas/LinkView"
+          }
+        },
+        "required": ["self", "category", "reviews"]
+      },
+      "GameView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/GameLinksView"
+          },
+          "categoryId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "averageRating": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 5
+          },
+          "reviewCount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "igdbId": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "_links",
+          "categoryId",
+          "title",
+          "description",
+          "platform",
+          "averageRating",
+          "reviewCount"
+        ],
+        "example": {
+          "id": 1,
+          "categoryId": 1,
+          "title": "Hades",
+          "description": "Veiksmo žaidimas, kuriame mėginama ištrūkti iš požemio.",
+          "platform": "PC",
+          "imageUrl": null,
+          "igdbId": null,
+          "averageRating": 4,
+          "reviewCount": 1,
+          "createdAt": "2026-09-13T10:00:00.000Z",
+          "updatedAt": "2026-09-13T10:00:00.000Z",
+          "_links": {
+            "self": {
+              "href": "/api/games/1"
+            },
+            "category": {
+              "href": "/api/categories/1"
+            },
+            "reviews": {
+              "href": "/api/categories/1/games/1/reviews"
+            }
+          }
+        }
+      },
+      "CreateGameDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "platform": {
+            "type": "string",
+            "example": "PC",
+            "maxLength": 100
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2048
+          }
+        },
+        "required": ["categoryId", "title", "description", "platform"],
+        "example": {
+          "categoryId": 1,
+          "title": "Hades",
+          "description": "Veiksmo žaidimas, kuriame mėginama ištrūkti iš požemio.",
+          "platform": "PC",
+          "imageUrl": null
+        }
+      },
+      "UpdateGameDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "platform": {
+            "type": "string",
+            "example": "PC",
+            "maxLength": 100
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2048
+          }
+        },
+        "example": {
+          "description": "Patikslintas žaidimo aprašymas.",
+          "platform": "PC"
+        }
+      },
+      "GameChildLinksView": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "$ref": "#/components/schemas/LinkView"
+          },
+          "game": {
+            "$ref": "#/components/schemas/LinkView"
+          }
+        },
+        "required": ["self", "game"]
+      },
+      "AuthorView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "displayName": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "displayName"],
+        "example": {
+          "id": 2,
+          "displayName": "Player"
+        }
+      },
+      "ReviewView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "_links": {
+            "$ref": "#/components/schemas/GameChildLinksView"
+          },
+          "gameId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "authorId": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "author": {
+            "$ref": "#/components/schemas/AuthorView"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "_links",
+          "gameId",
+          "authorId",
+          "text",
+          "rating",
+          "author"
+        ],
+        "example": {
+          "id": 1,
+          "gameId": 1,
+          "authorId": 2,
+          "text": "Įdomios kovos ir aiškus progresas.",
+          "rating": 4,
+          "author": {
+            "id": 2,
+            "displayName": "Player"
+          },
+          "createdAt": "2026-09-13T10:00:00.000Z",
+          "updatedAt": "2026-09-13T10:00:00.000Z",
+          "_links": {
+            "self": {
+              "href": "/api/games/1/reviews/1"
+            },
+            "game": {
+              "href": "/api/games/1"
+            }
+          }
+        }
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          }
+        },
+        "required": ["text", "rating"],
+        "example": {
+          "text": "Įdomios kovos ir aiškus progresas.",
+          "rating": 4
+        }
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          }
+        },
+        "example": {
+          "text": "Po ilgesnio žaidimo vertinu dar geriau.",
+          "rating": 5
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "required": ["statusCode", "message"],
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "example": "Invalid input"
+          }
+        }
+      }
+    }
+  },
+  "security": []
+}

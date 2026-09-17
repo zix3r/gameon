@@ -8,6 +8,10 @@
 
 **Sistema:** <https://gameon-uni.duckdns.org> · **API:** <https://gameon-uni.duckdns.org/api/docs>
 
+## Ataskaita ir dokumentacija
+
+[Ataskaita (ODT)](docs/ataskaita.odt) · [PDF](docs/ataskaita.pdf) · [OpenAPI ir naudojimo pavyzdžiai](docs/api.md) · [Diagrama ir wireframe](docs/README.md)
+
 ## Paleidimas
 
 Reikia Docker su Compose v2+.
