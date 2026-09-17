@@ -10,7 +10,7 @@
 
 ## Ataskaita ir dokumentacija
 
-[Ataskaita (ODT)](docs/ataskaita.odt) · [PDF](docs/ataskaita.pdf) · [OpenAPI ir naudojimo pavyzdžiai](docs/api.md) · [Diagrama ir wireframe](docs/README.md)
+[PDF](docs/ataskaita.pdf) · [OpenAPI ir naudojimo pavyzdžiai](docs/api.md)
 
 ## Paleidimas
 
